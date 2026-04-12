@@ -1,0 +1,36 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f0f0f;
+  color: white;
+}
+
+.hero {
+  text-align: center;
+  padding: 50px;
+  background: linear-gradient(135deg, #111, #222);
+}
+
+.hero a {
+  color: #ff0000;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+main {
+  padding: 20px;
+  text-align: center;
+}
+
+#video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.card {
+  background: #1c1c1c;
+  padding: 10px;
+  border-radius: 10px;
+}
