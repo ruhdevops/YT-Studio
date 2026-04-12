@@ -51,12 +51,13 @@ function renderVideos(videos) {
     card.className = "card";
 
     card.innerHTML = `
-      <img src="${thumbnail}" style="width:100%; border-radius:10px;">
+      <img src="${thumbnail}" alt="${title}" style="width:100%; border-radius:10px;">
       <h3>${title}</h3>
       <iframe 
         width="100%" 
         height="200"
         src="https://www.youtube.com/embed/${videoId}"
+        title="${title}"
         frameborder="0"
         allowfullscreen>
       </iframe>
@@ -70,6 +71,7 @@ function renderVideos(videos) {
  * MAIN EXECUTION
  */
 (async function init() {
+  grid.innerHTML = "<p class=\"loading\">Loading videos...</p>";
   try {
     const uploadsPlaylistId = await getUploadsPlaylistId();
     const videos = await getVideos(uploadsPlaylistId);
