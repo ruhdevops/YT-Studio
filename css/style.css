@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 :root {
   --primary-color: #ffcc00;
   --bg-dark: #0d0d0d;
@@ -10,7 +9,7 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
   background: var(--bg-dark);
   color: var(--text-main);
   line-height: 1.6;
@@ -40,7 +39,7 @@ body {
   background-size: cover;
   background-position: center;
   display: flex;
-  align-items: flex-end; /* Anchors text to bottom-left for cinematic feel */
+  align-items: flex-end;
   padding: 60px 40px;
   position: relative;
 }
@@ -60,7 +59,7 @@ body {
 
 .overlay h1 {
   margin: 0;
-  font-size: clamp(1.5rem, 5vw, 2.5rem); /* Responsive font size */
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
   font-weight: 800;
 }
 
@@ -107,7 +106,7 @@ body {
   border: 1px solid #333;
   padding: 8px 20px;
   cursor: pointer;
-  border-radius: 20px; /* Pill shape is more modern */
+  border-radius: 20px;
   transition: var(--transition);
   font-weight: 500;
 }
@@ -129,10 +128,12 @@ body {
   padding: 0 40px 40px;
 }
 
-.grid {
+.grid,
+#video-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 25px;
+  padding: 20px;
 }
 
 /* =========================
@@ -141,9 +142,10 @@ body {
 .card {
   background: var(--bg-card);
   border-radius: 12px;
-  overflow: hidden; /* Ensures content doesn't spill past rounded corners */
+  overflow: hidden;
   transition: var(--transition);
   border: 1px solid transparent;
+  padding: 10px;
 }
 
 .card:hover {
@@ -153,7 +155,7 @@ body {
 
 .card img {
   width: 100%;
-  aspect-ratio: 16 / 9; /* Keeps all thumbnails uniform */
+  aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
 }
@@ -168,7 +170,7 @@ body {
   color: var(--primary-color);
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* Prevents long titles from breaking layout */
+  text-overflow: ellipsis;
 }
 
 .card p {
@@ -183,36 +185,16 @@ body {
   border: none;
 }
 
-/* Mobile Tweaks */
+/* =========================
+   MOBILE
+========================= */
 @media (max-width: 600px) {
-  .featured { padding: 40px 20px; min-height: 350px; }
-  .episodes { padding: 0 15px 20px; }
-}
-=======
-@'
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #0d0d0d;
-  color: white;
-}
+  .featured {
+    padding: 40px 20px;
+    min-height: 350px;
+  }
 
-.header {
-  text-align: center;
-  padding: 20px;
+  .episodes {
+    padding: 0 15px 20px;
+  }
 }
-
-#video-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 10px;
-  padding: 20px;
-}
-
-.card {
-  background: #1a1a1a;
-  padding: 10px;
-  border-radius: 10px;
-}
-'@ | Set-Content -Encoding UTF8 css\style.css
->>>>>>> 0bcfeb7 (Fix full YouTube integration and resolve video loading issue)
