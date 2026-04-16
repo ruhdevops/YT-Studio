@@ -1,8 +1,18 @@
+:root {
+  --primary-color: #ffcc00;
+  --bg-dark: #0d0d0d;
+  --bg-card: #1a1a1a;
+  --text-main: #ffffff;
+  --text-muted: #aaa;
+  --transition: 0.3s ease;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0d0d0d;
-  color: white;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  line-height: 1.6;
 }
 
 /* =========================
@@ -10,25 +20,27 @@ body {
 ========================= */
 .header {
   text-align: center;
-  padding: 20px;
-  background: #111;
+  padding: 30px 20px;
+  background: linear-gradient(to bottom, #111, var(--bg-dark));
+  border-bottom: 1px solid #222;
 }
 
 .header h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: 2rem;
+  letter-spacing: -0.5px;
 }
 
 /* =========================
    FEATURED BANNER
 ========================= */
 .featured {
-  height: 420px;
+  min-height: 450px;
   background-size: cover;
   background-position: center;
   display: flex;
-  align-items: center;
-  padding: 40px;
+  align-items: flex-end; /* Anchors text to bottom-left for cinematic feel */
+  padding: 60px 40px;
   position: relative;
 }
 
@@ -36,111 +48,142 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: linear-gradient(to top, rgba(13,13,13,1) 10%, transparent 90%);
 }
 
 .overlay {
   position: relative;
   z-index: 2;
-  background: rgba(0,0,0,0.5);
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 500px;
+  max-width: 600px;
 }
 
 .overlay h1 {
   margin: 0;
-  font-size: 26px;
+  font-size: clamp(1.5rem, 5vw, 2.5rem); /* Responsive font size */
+  font-weight: 800;
 }
 
 .overlay p {
-  margin: 10px 0;
-  color: #ccc;
+  margin: 15px 0;
+  color: #ddd;
+  font-size: 1.1rem;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 
 #play-btn {
-  background: #ffcc00;
+  background: var(--primary-color);
+  color: black;
   border: none;
-  padding: 10px 20px;
-  font-size: 16px;
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: bold;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 4px;
+  transition: var(--transition);
+  text-transform: uppercase;
+}
+
+#play-btn:hover {
+  background: #e6b800;
+  transform: translateY(-2px);
 }
 
 /* =========================
    FILTERS
 ========================= */
 .filters {
-  text-align: center;
-  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 30px 0;
+  padding: 0 20px;
 }
 
 .season-btn {
   background: #222;
   color: white;
-  border: none;
-  padding: 10px 15px;
-  margin: 5px;
+  border: 1px solid #333;
+  padding: 8px 20px;
   cursor: pointer;
-  border-radius: 6px;
-  transition: 0.3s;
+  border-radius: 20px; /* Pill shape is more modern */
+  transition: var(--transition);
+  font-weight: 500;
 }
 
 .season-btn:hover {
-  background: #444;
+  border-color: var(--primary-color);
 }
 
 .season-btn.active {
-  background: #ffcc00;
+  background: var(--primary-color);
   color: black;
+  border-color: var(--primary-color);
 }
 
 /* =========================
    EPISODE GRID
 ========================= */
 .episodes {
-  padding: 20px;
+  padding: 0 40px 40px;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
 }
 
 /* =========================
    VIDEO CARD
 ========================= */
 .card {
-  background: #1a1a1a;
-  border-radius: 10px;
-  padding: 10px;
-  transition: 0.3s;
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden; /* Ensures content doesn't spill past rounded corners */
+  transition: var(--transition);
+  border: 1px solid transparent;
 }
 
 .card:hover {
-  transform: scale(1.03);
+  transform: translateY(-5px);
+  border-color: #333;
 }
 
 .card img {
   width: 100%;
-  border-radius: 8px;
+  aspect-ratio: 16 / 9; /* Keeps all thumbnails uniform */
+  object-fit: cover;
+  display: block;
+}
+
+.card-content {
+  padding: 15px;
 }
 
 .card h3 {
-  font-size: 14px;
-  margin: 8px 0;
-  color: #ffcc00;
+  font-size: 1rem;
+  margin: 0 0 8px 0;
+  color: var(--primary-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Prevents long titles from breaking layout */
 }
 
 .card p {
-  font-size: 12px;
-  color: #aaa;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
 }
 
 .card iframe {
   width: 100%;
-  height: 180px;
+  aspect-ratio: 16 / 9;
   border: none;
-  border-radius: 8px;
+}
+
+/* Mobile Tweaks */
+@media (max-width: 600px) {
+  .featured { padding: 40px 20px; min-height: 350px; }
+  .episodes { padding: 0 15px 20px; }
 }

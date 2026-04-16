@@ -8,14 +8,17 @@ export default {
       const API_KEY = env.YOUTUBE_API_KEY;
       const CHANNEL_ID = "UCrjJP_SHUeCmqpTSHJCXkdA";
 
-      // 1. Get uploads playlist
+      // 1. Get uploads playlist ID
       const channelRes = await fetch(
         `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${CHANNEL_ID}&key=${API_KEY}`
       );
 
       if (!channelRes.ok) {
         const errorData = await channelRes.json();
-        return json({ error: "YouTube API Error", details: errorData }, channelRes.status);
+        return json(
+          { error: "YouTube API Error", details: errorData },
+          channelRes.status
+        );
       }
 
       const channelData = await channelRes.json();
@@ -27,22 +30,27 @@ export default {
         return json({ error: "Channel not found or has no uploads" }, 404);
       }
 
-      // 2. Fetch videos
+      // 2. Fetch videos from playlist
       const videosRes = await fetch(
         `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=20&key=${API_KEY}`
       );
 
       if (!videosRes.ok) {
         const err = await videosRes.json();
-        return json({ error: "Failed to fetch videos", details: err }, videosRes.status);
+        return json(
+          { error: "Failed to fetch videos", details: err },
+          videosRes.status
+        );
       }
 
       const videosData = await videosRes.json();
 
-      // 3. Map response
+      // 3. Map videos
       const videos = (videosData.items || []).map((item) => ({
         title: item.snippet.title,
         videoId: item.snippet.resourceId.videoId,
+        url: `https://www.youtube.com/watch?v=${item.snippet.resourceId.videoId}`,
+        shortUrl: `https://youtu.be/${item.snippet.resourceId.videoId}`,
         thumbnail:
           item.snippet.thumbnails?.high?.url ||
           item.snippet.thumbnails?.default?.url,
@@ -60,7 +68,7 @@ export default {
   }
 };
 
-// 📦 Helper
+// 📦 JSON helper
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,

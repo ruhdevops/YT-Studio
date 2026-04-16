@@ -1,11 +1,12 @@
-const WORKER_URL = "https://ruhaltarikh-api.workers.dev";
+const WORKER_URL =
+  "https://old-sound-f9da.yt-studio-ruhaltarikh.workers.dev";
 
 const grid = document.getElementById("video-grid");
 
 let allVideos = [];
 
 /**
- * 🎬 Parse season + episode
+ * 🎬 Parse season + episode safely
  */
 function parseMeta(title) {
   const t = title.toLowerCase();
@@ -14,10 +15,10 @@ function parseMeta(title) {
   let episode = 0;
 
   const s = t.match(/season\s*(\d+)/);
-  const e = t.match(/(ep|episode)\s*(\d+)/);
+  const e = t.match(/(?:ep|episode)\s*(\d+)/);
 
-  if (s) season = +s[1];
-  if (e) episode = +e[2];
+  if (s) season = Number(s[1]);
+  if (e) episode = Number(e[1]);
 
   return { season, episode };
 }
@@ -37,7 +38,10 @@ function setFeatured(video) {
   meta.textContent = `Season ${video.season} • Episode ${video.episode}`;
 
   btn.onclick = () => {
-    window.open(`https://www.youtube.com/watch?v=${video.videoId}`, "_blank");
+    window.open(
+      `https://www.youtube.com/watch?v=${video.videoId}`,
+      "_blank"
+    );
   };
 }
 
@@ -51,41 +55,64 @@ async function loadVideos() {
     const res = await fetch(WORKER_URL);
     const data = await res.json();
 
+    if (!res.ok || !data.videos) {
+      throw new Error("API failed");
+    }
+
     allVideos = (data.videos || [])
-      .map(v => ({ ...v, ...parseMeta(v.title) }))
-      .sort((a, b) => a.season - b.season || a.episode - b.episode);
+      .map((v) => ({ ...v, ...parseMeta(v.title) }))
+      .sort(
+        (a, b) =>
+          a.season - b.season ||
+          a.episode - b.episode
+      );
 
-    if (!allVideos.length) return;
+    if (!allVideos.length) {
+      grid.innerHTML = "<p>No videos found</p>";
+      return;
+    }
 
-    // 🎬 Featured = latest
+    // 🎬 Featured = latest episode
     setFeatured(allVideos[allVideos.length - 1]);
 
     render(allVideos);
-
   } catch (e) {
-    grid.innerHTML = "<p>Failed to load</p>";
+    grid.innerHTML = "<p>Failed to load videos</p>";
   }
 }
 
 /**
- * 🎥 Render grid
+ * 🎥 Render grid (optimized - no iframe spam)
  */
 function render(list) {
   grid.innerHTML = "";
 
-  list.forEach(v => {
+  list.forEach((v) => {
     const card = document.createElement("div");
     card.className = "card";
 
-    card.innerHTML = `
-      <img src="${v.thumbnail}">
-      <h3>S${v.season} • E${v.episode}</h3>
-      <p>${v.title}</p>
-      <iframe
-        src="https://www.youtube.com/embed/${v.videoId}"
-        allowfullscreen>
-      </iframe>
-    `;
+    const img = document.createElement("img");
+    img.src = v.thumbnail;
+    img.alt = v.title;
+
+    const h3 = document.createElement("h3");
+    h3.textContent = `S${v.season} • E${v.episode}`;
+
+    const p = document.createElement("p");
+    p.textContent = v.title;
+
+    const btn = document.createElement("button");
+    btn.textContent = "▶ Watch";
+    btn.onclick = () =>
+      window.open(
+        `https://www.youtube.com/watch?v=${v.videoId}`,
+        "_blank"
+      );
+
+    card.appendChild(img);
+    card.appendChild(h3);
+    card.appendChild(p);
+    card.appendChild(btn);
 
     grid.appendChild(card);
   });
@@ -95,24 +122,28 @@ function render(list) {
  * 🎛 Filter system
  */
 function initFilters() {
-  document.querySelectorAll(".season-btn").forEach(btn => {
+  document.querySelectorAll(".season-btn").forEach((btn) => {
     btn.onclick = () => {
-      document.querySelectorAll(".season-btn").forEach(b => b.classList.remove("active"));
+      document
+        .querySelectorAll(".season-btn")
+        .forEach((b) => b.classList.remove("active"));
+
       btn.classList.add("active");
 
       const s = btn.dataset.season;
 
-      if (s === "all") render(allVideos);
-      else {
-        const num = +s.replace("season", "");
-        render(allVideos.filter(v => v.season === num));
+      if (s === "all") {
+        render(allVideos);
+      } else {
+        const num = Number(s.replace("season", ""));
+        render(allVideos.filter((v) => v.season === num));
       }
     };
   });
 }
 
 /**
- * INIT
+ * 🚀 INIT
  */
 loadVideos();
 initFilters();

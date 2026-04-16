@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Ruh Al Tarikh</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta name="description" content="Islamic Documentary Series - Ruh Al Tarikh" />
+
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
@@ -20,22 +23,27 @@
     <div class="overlay">
       <h1 id="featured-title">Loading...</h1>
       <p id="featured-meta"></p>
-      <button id="play-btn">▶ Watch Now</button>
+
+      <button id="play-btn" type="button">
+        ▶ Watch Now
+      </button>
     </div>
   </section>
 
-  <!-- FILTER -->
+  <!-- FILTER BUTTONS -->
   <section class="filters">
-    <button class="season-btn active" data-season="all">All</button>
-    <button class="season-btn" data-season="season1">Season 1</button>
-    <button class="season-btn" data-season="season2">Season 2</button>
+    <button class="season-btn active" data-season="all" type="button">All</button>
+    <button class="season-btn" data-season="season1" type="button">Season 1</button>
+    <button class="season-btn" data-season="season2" type="button">Season 2</button>
   </section>
 
-  <!-- GRID -->
-  <section class="episodes">
+  <!-- VIDEO GRID -->
+  <main class="episodes">
     <div id="video-grid" class="grid"></div>
-  </section>
+  </main>
 
-  <script src="js/app.js"></script>
+  <!-- SCRIPT -->
+  <script src="js/app.js" defer></script>
+
 </body>
 </html>
