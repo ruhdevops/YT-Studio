@@ -1,74 +1,54 @@
-export default {
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+
+// src/index.js
+var index_default = {
   async fetch(request, env) {
-    if (request.method === "OPTIONS") {
-      return json({ ok: true });
-    }
-
     try {
-      const API_KEY = env.YOUTUBE_API_KEY;
+      const API_KEY = env.AIzaSyAjd6rE_KTxT9mdkT4XPrEL2vD0fEEc9DA;
+      if (!API_KEY) {
+        return jsonResponse({ error: "Missing API key" }, 500);
+      }
       const CHANNEL_ID = "UCrjJP_SHUeCmqpTSHJCXkdA";
-
-      // 1. Get uploads playlist
-      const channelRes = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${CHANNEL_ID}&key=${API_KEY}`
-      );
-
-      if (!channelRes.ok) {
-        const errorData = await channelRes.json();
-        return json({ error: "YouTube API Error", details: errorData }, channelRes.status);
-      }
-
+      const channelUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${CHANNEL_ID}&key=${API_KEY}`;
+      const channelRes = await fetch(channelUrl);
       const channelData = await channelRes.json();
-
-      const uploadsPlaylistId =
-        channelData.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
-
-      if (!uploadsPlaylistId) {
-        return json({ error: "Channel not found or has no uploads" }, 404);
+      if (!channelRes.ok || !channelData.items?.length) {
+        return jsonResponse({ error: "Channel not found" }, 404);
       }
-
-      // 2. Fetch videos
-      const videosRes = await fetch(
-        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=20&key=${API_KEY}`
-      );
-
-      if (!videosRes.ok) {
-        const err = await videosRes.json();
-        return json({ error: "Failed to fetch videos", details: err }, videosRes.status);
-      }
-
+      const uploadsPlaylistId = channelData.items[0].contentDetails.relatedPlaylists.uploads;
+      const videosUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=10&key=${API_KEY}`;
+      const videosRes = await fetch(videosUrl);
       const videosData = await videosRes.json();
-
-      // 3. Map response
-      const videos = (videosData.items || []).map((item) => ({
-        title: item.snippet.title,
-        videoId: item.snippet.resourceId.videoId,
-        thumbnail:
-          item.snippet.thumbnails?.high?.url ||
-          item.snippet.thumbnails?.default?.url,
-        publishedAt: item.snippet.publishedAt
-      }));
-
-      return json({ videos });
-
+      const videos = (videosData.items || []).map((item) => {
+        const snippet = item.snippet || {};
+        return {
+          title: snippet.title || "No title",
+          videoId: snippet.resourceId?.videoId || "",
+          publishedAt: snippet.publishedAt || "",
+          thumbnail: snippet.thumbnails?.high?.url || ""
+        };
+      });
+      return jsonResponse({ videos });
     } catch (err) {
-      return json(
-        { error: "Internal Server Error", message: err.message },
+      return jsonResponse(
+        { error: "Worker crashed", details: err.message },
         500
       );
     }
   }
 };
-
-// 📦 Helper
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data, null, 2), {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
+      "Access-Control-Allow-Origin": "*"
     }
   });
 }
+__name(jsonResponse, "jsonResponse");
+export {
+  index_default as default
+};
+//# sourceMappingURL=index.js.map
