@@ -3,11 +3,11 @@ export default {
     try {
       const API_KEY = env.YOUTUBE_API_KEY;
 
-      const CHANNEL_HANDLE = "Ruh-Al-Tarikh";
+      // ✅ FIXED: direct channel ID method (MOST RELIABLE)
+      const CHANNEL_ID = "UCrjJP_SHUeCmqpTSHJCXkdA"; // ← replace with your real channel ID
 
-      // STEP 1: Get channel
       const channelRes = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle=${CHANNEL_HANDLE}&key=${API_KEY}`
+        `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${CHANNEL_ID}&key=${API_KEY}`
       );
 
       const channelData = await channelRes.json();
@@ -16,10 +16,9 @@ export default {
         channelData.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
 
       if (!uploads) {
-        return json({ error: "Channel not found" }, 404);
+        return json({ error: "Uploads not found" }, 404);
       }
 
-      // STEP 2: Get videos
       const videosRes = await fetch(
         `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=20&key=${API_KEY}`
       );
