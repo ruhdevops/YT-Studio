@@ -1,10 +1,12 @@
 [
   {
     "title": "Welcome Episode - Ruh Al Tarikh",
-    "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "videoId": "dQw4w9WgXcQ",
+    "thumbnail": "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
   },
   {
     "title": "Episode 2 - Islamic History Story",
-    "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "videoId": "dQw4w9WgXcQ",
+    "thumbnail": "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
   }
 ]
