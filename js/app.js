@@ -5,73 +5,84 @@ const grid = document.getElementById("video-grid");
 let allVideos = [];
 
 /**
- * 🎬 Extract season & episode from title
+ * 🎬 Parse season + episode
  */
-function parseVideoMeta(title) {
-  const lower = title.toLowerCase();
+function parseMeta(title) {
+  const t = title.toLowerCase();
 
   let season = 1;
   let episode = 0;
 
-  // Detect Season
-  const seasonMatch = lower.match(/season\s*(\d+)/);
-  if (seasonMatch) season = parseInt(seasonMatch[1]);
+  const s = t.match(/season\s*(\d+)/);
+  const e = t.match(/(ep|episode)\s*(\d+)/);
 
-  // Detect Episode
-  const episodeMatch = lower.match(/(ep|episode)\s*(\d+)/);
-  if (episodeMatch) episode = parseInt(episodeMatch[2]);
+  if (s) season = +s[1];
+  if (e) episode = +e[2];
 
   return { season, episode };
 }
 
 /**
- * Load videos
+ * 🔥 Featured banner
+ */
+function setFeatured(video) {
+  const banner = document.getElementById("featured-banner");
+  const title = document.getElementById("featured-title");
+  const meta = document.getElementById("featured-meta");
+  const btn = document.getElementById("play-btn");
+
+  banner.style.backgroundImage = `url(${video.thumbnail})`;
+
+  title.textContent = video.title;
+  meta.textContent = `Season ${video.season} • Episode ${video.episode}`;
+
+  btn.onclick = () => {
+    window.open(`https://www.youtube.com/watch?v=${video.videoId}`, "_blank");
+  };
+}
+
+/**
+ * 📺 Load videos
  */
 async function loadVideos() {
   try {
-    grid.innerHTML = "<p class='loading'>🎬 Loading episodes...</p>";
+    grid.innerHTML = "<p>Loading...</p>";
 
     const res = await fetch(WORKER_URL);
     const data = await res.json();
 
-    allVideos = (data.videos || []).map(v => {
-      const meta = parseVideoMeta(v.title);
-      return { ...v, ...meta };
-    });
+    allVideos = (data.videos || [])
+      .map(v => ({ ...v, ...parseMeta(v.title) }))
+      .sort((a, b) => a.season - b.season || a.episode - b.episode);
 
-    // 🔥 Sort by season → episode
-    allVideos.sort((a, b) => {
-      if (a.season !== b.season) return a.season - b.season;
-      return a.episode - b.episode;
-    });
+    if (!allVideos.length) return;
 
-    renderVideos(allVideos);
+    // 🎬 Featured = latest
+    setFeatured(allVideos[allVideos.length - 1]);
 
-  } catch (err) {
-    console.error(err);
-    grid.innerHTML = "<p>Failed to load videos</p>";
+    render(allVideos);
+
+  } catch (e) {
+    grid.innerHTML = "<p>Failed to load</p>";
   }
 }
 
 /**
- * Render videos
+ * 🎥 Render grid
  */
-function renderVideos(videos) {
+function render(list) {
   grid.innerHTML = "";
 
-  videos.forEach((item) => {
+  list.forEach(v => {
     const card = document.createElement("div");
     card.className = "card";
 
     card.innerHTML = `
-      <img src="${item.thumbnail}" style="width:100%; border-radius:10px;">
-      <h3>Season ${item.season} • Episode ${item.episode}</h3>
-      <p>${item.title}</p>
+      <img src="${v.thumbnail}">
+      <h3>S${v.season} • E${v.episode}</h3>
+      <p>${v.title}</p>
       <iframe
-        width="100%"
-        height="200"
-        src="https://www.youtube.com/embed/${item.videoId}"
-        frameborder="0"
+        src="https://www.youtube.com/embed/${v.videoId}"
         allowfullscreen>
       </iframe>
     `;
@@ -81,26 +92,22 @@ function renderVideos(videos) {
 }
 
 /**
- * 🎬 Season filter (SMART)
+ * 🎛 Filter system
  */
-function initSeasonFilter() {
-  const buttons = document.querySelectorAll(".season-btn");
-
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      buttons.forEach(b => b.classList.remove("active"));
+function initFilters() {
+  document.querySelectorAll(".season-btn").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll(".season-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
 
-      const season = btn.dataset.season;
+      const s = btn.dataset.season;
 
-      if (season === "all") {
-        renderVideos(allVideos);
-      } else {
-        const seasonNum = parseInt(season.replace("season", ""));
-        const filtered = allVideos.filter(v => v.season === seasonNum);
-        renderVideos(filtered);
+      if (s === "all") render(allVideos);
+      else {
+        const num = +s.replace("season", "");
+        render(allVideos.filter(v => v.season === num));
       }
-    });
+    };
   });
 }
 
@@ -108,4 +115,4 @@ function initSeasonFilter() {
  * INIT
  */
 loadVideos();
-initSeasonFilter();
+initFilters();

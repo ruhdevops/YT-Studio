@@ -1,98 +1,146 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #0b0f19;
-  color: #fff;
+  background: #0d0d0d;
+  color: white;
 }
 
-/* HERO SECTION */
-.hero {
-  height: 320px;
+/* =========================
+   HEADER
+========================= */
+.header {
+  text-align: center;
+  padding: 20px;
+  background: #111;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+/* =========================
+   FEATURED BANNER
+========================= */
+.featured {
+  height: 420px;
+  background-size: cover;
+  background-position: center;
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  background: linear-gradient(
-    to right,
-    #0b0f19,
-    #111a2e,
-    #0b0f19
-  );
-}
-
-.hero h1 {
-  font-size: 48px;
-  margin: 0;
-  letter-spacing: 2px;
-}
-
-.hero p {
-  color: #aaa;
-}
-
-/* EPISODES */
-.episodes {
   padding: 40px;
+  position: relative;
 }
 
-.episodes h2 {
-  margin-bottom: 20px;
+.featured::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
 }
 
-/* GRID */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+.overlay {
+  position: relative;
+  z-index: 2;
+  background: rgba(0,0,0,0.5);
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
 }
 
-/* CARD */
-.card {
-  background: #141a2a;
-  border-radius: 12px;
-  overflow: hidden;
-  transition: 0.3s ease;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+.overlay h1 {
+  margin: 0;
+  font-size: 26px;
 }
 
-.card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+.overlay p {
+  margin: 10px 0;
+  color: #ccc;
 }
 
-.card h3 {
-  padding: 10px;
-  font-size: 14px;
+#play-btn {
+  background: #ffcc00;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
 }
 
-/* LOADING */
-.loading {
-  color: #888;
-}
-
-.seasons {
-  display: flex;
-  gap: 10px;
-  padding: 20px 40px;
-  flex-wrap: wrap;
+/* =========================
+   FILTERS
+========================= */
+.filters {
+  text-align: center;
+  margin: 20px 0;
 }
 
 .season-btn {
-  padding: 10px 16px;
+  background: #222;
+  color: white;
   border: none;
-  border-radius: 20px;
-  background: #1c2436;
-  color: #fff;
+  padding: 10px 15px;
+  margin: 5px;
   cursor: pointer;
+  border-radius: 6px;
   transition: 0.3s;
 }
 
 .season-btn:hover {
-  background: #2a3550;
+  background: #444;
 }
 
 .season-btn.active {
   background: #ffcc00;
-  color: #000;
-  font-weight: bold;
+  color: black;
+}
+
+/* =========================
+   EPISODE GRID
+========================= */
+.episodes {
+  padding: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+/* =========================
+   VIDEO CARD
+========================= */
+.card {
+  background: #1a1a1a;
+  border-radius: 10px;
+  padding: 10px;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+.card img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.card h3 {
+  font-size: 14px;
+  margin: 8px 0;
+  color: #ffcc00;
+}
+
+.card p {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.card iframe {
+  width: 100%;
+  height: 180px;
+  border: none;
+  border-radius: 8px;
 }
