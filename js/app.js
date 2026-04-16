@@ -6,8 +6,7 @@ const grid = document.getElementById("video-grid");
  * Load videos from Cloudflare Worker
  */
 async function loadVideos() {
-  try {
-    grid.innerHTML = "<p class='loading'>Loading videos...</p>";
+  grid.innerHTML = "<p class='loading'>🎬 Loading cinematic episodes...</p>";
 
     const res = await fetch(WORKER_URL);
     const data = await res.json();
