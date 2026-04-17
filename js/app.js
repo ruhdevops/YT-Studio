@@ -4,22 +4,17 @@ const grid = document.getElementById("video-grid");
 
 let allVideos = [];
 
-/**
- * 🚀 Load videos from Cloudflare Worker
- */
 async function loadVideos() {
   try {
-    grid.innerHTML = "<p class='loading'>🎬 Loading episodes...</p>";
+    grid.innerHTML = "<p>🎬 Loading episodes...</p>";
 
     const res = await fetch(WORKER_URL);
 
-    if (!res.ok) {
-      throw new Error(`Worker failed: ${res.status}`);
-    }
+    if (!res.ok) throw new Error("Worker failed");
 
     const data = await res.json();
 
-    // ✅ Ensure correct structure
+    // ✅ Ensure proper structure
     if (!data || !Array.isArray(data.videos)) {
       throw new Error("Invalid API response");
     }
@@ -27,33 +22,38 @@ async function loadVideos() {
     allVideos = data.videos;
 
     if (allVideos.length === 0) {
-      grid.innerHTML = "<p>No videos found</p>";
+      grid.innerHTML = "<p>No episodes found</p>";
       return;
     }
 
     render(allVideos);
 
   } catch (err) {
-    console.error("🔥 Load Error:", err);
+    console.error("Error:", err);
     grid.innerHTML = "<p>❌ Failed to load videos</p>";
   }
 }
 
-/**
- * 🎥 Render video cards
- */
 function render(videos) {
   grid.innerHTML = "";
 
   videos.forEach(v => {
-    if (!v.videoId || !v.thumbnail) return; // safety check
+    if (!v.videoId) return;
 
     const card = document.createElement("div");
     card.className = "card";
 
     card.innerHTML = `
-      <img src="${v.thumbnail}" alt="${v.title}" loading="lazy">
+      <img src="${v.thumbnail}" style="width:100%; border-radius:10px;">
       <h3>${v.title}</h3>
     `;
 
-    card
+    card.onclick = () => {
+      window.open(`https://www.youtube.com/watch?v=${v.videoId}`, "_blank");
+    };
+
+    grid.appendChild(card);
+  });
+}
+
+loadVideos();
