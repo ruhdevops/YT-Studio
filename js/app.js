@@ -2,25 +2,43 @@ const WORKER_URL = "https://yt-studio-api.ruhdevopsytstudio.workers.dev";
 
 const grid = document.getElementById("video-grid");
 
+const modal = document.getElementById("video-modal");
+const player = document.getElementById("modal-player");
+const closeBtn = document.getElementById("close-modal");
+
 let allVideos = [];
 
-/* HERO */
+/* 🎬 HERO */
 function setFeatured(video) {
   const section = document.getElementById("featured");
   const title = document.getElementById("featured-title");
   const btn = document.getElementById("featured-btn");
 
-  if (!video) return;
-
   section.style.display = "block";
   section.style.backgroundImage = `url(${video.thumbnail})`;
-
   title.textContent = video.title;
 
-  btn.onclick = () => {
-    window.open(`https://www.youtube.com/watch?v=${video.videoId}`, "_blank");
-  };
+  btn.onclick = () => openModal(video.videoId);
 }
+
+/* 🎥 OPEN MODAL */
+function openModal(videoId) {
+  modal.style.display = "block";
+  player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+}
+
+/* ❌ CLOSE MODAL */
+closeBtn.onclick = () => {
+  modal.style.display = "none";
+  player.src = "";
+};
+
+window.onclick = (e) => {
+  if (e.target === modal) {
+    modal.style.display = "none";
+    player.src = "";
+  }
+};
 
 /* LOAD */
 async function loadVideos() {
@@ -46,7 +64,7 @@ async function loadVideos() {
   }
 }
 
-/* RENDER WITH HOVER PREVIEW */
+/* 🎥 RENDER */
 function render(videos) {
   grid.innerHTML = "";
 
@@ -56,20 +74,14 @@ function render(videos) {
 
     card.innerHTML = `
       <img src="${v.thumbnail}">
-      
-      <!-- 🎥 HOVER PREVIEW -->
-      <iframe
-        class="preview"
+      <iframe class="preview"
         src="https://www.youtube.com/embed/${v.videoId}?autoplay=1&mute=1&controls=0"
-        allow="autoplay"
-      ></iframe>
-
+        allow="autoplay">
+      </iframe>
       <h3>${v.title}</h3>
     `;
 
-    card.onclick = () => {
-      window.open(`https://www.youtube.com/watch?v=${v.videoId}`, "_blank");
-    };
+    card.onclick = () => openModal(v.videoId);
 
     grid.appendChild(card);
   });
