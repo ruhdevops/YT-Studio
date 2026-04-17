@@ -6,16 +6,45 @@ let currentIndex = 0;
 async function loadVideos() {
   const grid = document.getElementById("video-grid");
 
-  grid.innerHTML = "Loading...";
+  try {
+    grid.innerHTML = "Loading...";
 
-  const res = await fetch(WORKER_URL);
-  const data = await res.json();
+    const res = await fetch(WORKER_URL);
+    const data = await res.json();
 
-  allVideos = data.videos || [];
+    allVideos = data.videos || [];
 
-  render(allVideos);
+    if (!allVideos.length) {
+      document.getElementById("featured-title").textContent =
+        "No episodes found";
+      return;
+    }
+
+    render(allVideos);
+    setFeatured(allVideos[0]); // ✅ ALWAYS SET FEATURED
+
+  } catch (e) {
+    console.error(e);
+
+    // ✅ FALLBACK FEATURED
+    document.getElementById("featured-title").textContent =
+      "Failed to load content";
+  }
 }
 
+/* ✅ FEATURED FIX */
+function setFeatured(video) {
+  const section = document.getElementById("featured");
+  const title = document.getElementById("featured-title");
+  const btn = document.getElementById("featured-btn");
+
+  section.style.backgroundImage = `url(${video.thumbnail})`;
+  title.textContent = video.title;
+
+  btn.onclick = () => openModal(0);
+}
+
+/* RENDER */
 function render(videos) {
   const grid = document.getElementById("video-grid");
   grid.innerHTML = "";
@@ -35,28 +64,28 @@ function render(videos) {
   });
 }
 
+/* MODAL */
 function openModal(index) {
   currentIndex = index;
 
-  const video = allVideos[index];
-  const modal = document.getElementById("video-modal");
-  const player = document.getElementById("modal-player");
+  const v = allVideos[index];
 
-  modal.style.display = "block";
+  document.getElementById("video-modal").style.display = "block";
 
-  // ✅ FIXED EMBED (WORKS ON GITHUB PAGES)
-  player.src =
-    `https://www.youtube.com/embed/${video.videoId}?autoplay=1&rel=0&origin=https://ruhdevops.github.io`;
+  document.getElementById("modal-player").src =
+    `https://www.youtube.com/embed/${v.videoId}?autoplay=1&origin=https://ruhdevops.github.io`;
 
-  document.getElementById("episode-title").textContent = video.title;
+  document.getElementById("episode-title").textContent = v.title;
   document.getElementById("episode-meta").textContent = "Now Playing";
 }
 
+/* CLOSE */
 document.getElementById("close-modal").onclick = () => {
   document.getElementById("video-modal").style.display = "none";
   document.getElementById("modal-player").src = "";
 };
 
+/* NEXT */
 document.getElementById("next-btn").onclick = () => {
   if (currentIndex < allVideos.length - 1) {
     openModal(currentIndex + 1);

@@ -12,20 +12,23 @@ body {
   background: linear-gradient(90deg, #8b0000, #b22222);
 }
 
-/* FEATURED */
+/* ✅ FEATURED FIX (REMOVE BLACK EMPTY ISSUE) */
 .featured {
-  height: 60vh;
+  height: 65vh;
+  background: #111; /* fallback visible */
   background-size: cover;
   background-position: center;
   position: relative;
+  display: block; /* IMPORTANT FIX */
 }
 
+/* overlay */
 .featured-overlay {
   position: absolute;
   bottom: 0;
   width: 100%;
-  padding: 20px;
-  background: linear-gradient(to top, black, transparent);
+  padding: 25px;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
 }
 
 /* GRID */
@@ -82,11 +85,10 @@ body {
   padding: 10px;
 }
 
-/* BUTTON */
 button {
   background: #b22222;
-  color: white;
   border: none;
-  padding: 10px 15px;
+  padding: 10px;
+  color: white;
   cursor: pointer;
 }
