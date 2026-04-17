@@ -3,71 +3,78 @@ const WORKER_URL = "https://yt-studio-api.ruhdevopsytstudio.workers.dev";
 let allVideos = [];
 let currentIndex = 0;
 
-/* 🎬 PARSE */
+/* 🎬 PARSE META */
 function parseMeta(title) {
   const t = title.toLowerCase();
-  const s = t.match(/season\s*(\d+)/);
-  const e = t.match(/(ep|episode)\s*(\d+)/);
+
+  const seasonMatch = t.match(/season\s*(\d+)/);
+  const episodeMatch = t.match(/(ep|episode)\s*(\d+)/);
 
   return {
-    season: s ? Number(s[1]) : 1,
-    episode: e ? Number(e[2]) : 0
+    season: seasonMatch ? Number(seasonMatch[1]) : 1,
+    episode: episodeMatch ? Number(episodeMatch[2]) : 0
   };
 }
 
-/* 🎬 FEATURED */
-function setFeatured(video) {
-  const section = document.getElementById("featured");
-  const title = document.getElementById("featured-title");
-  const btn = document.getElementById("featured-btn");
-
-  section.style.display = "block";
-  section.style.backgroundImage = `url(${video.thumbnail})`;
-  title.textContent = video.title;
-
-  btn.onclick = () => openModal(0);
-}
-
-/* 🎥 MODAL */
+/* 🎥 OPEN MODAL */
 function openModal(index) {
   currentIndex = index;
 
-  const v = allVideos[index];
+  const video = allVideos[index];
+  if (!video) return;
 
-  document.getElementById("video-modal").style.display = "block";
-  document.getElementById("modal-player").src =
-    `https://www.youtube.com/embed/${v.videoId}?autoplay=1`;
+  const modal = document.getElementById("video-modal");
+  const player = document.getElementById("modal-player");
 
-  document.getElementById("episode-title").textContent = v.title;
+  modal.style.display = "block";
+
+  // ✅ FIXED EMBED (VIDEO + AUTOPLAY)
+  player.src = `https://www.youtube.com/embed/${video.videoId}?autoplay=1&rel=0&modestbranding=1`;
+
+  document.getElementById("episode-title").textContent = video.title;
   document.getElementById("episode-meta").textContent =
-    `Season ${v.season} • Episode ${v.episode}`;
+    `Season ${video.season} • Episode ${video.episode}`;
 
+  // 💾 SAVE PROGRESS
   localStorage.setItem("lastWatched", index);
-  renderContinue();
 }
 
-/* NEXT */
+/* ⏭ NEXT EPISODE */
 document.getElementById("next-btn").onclick = () => {
   if (currentIndex < allVideos.length - 1) {
     openModal(currentIndex + 1);
   }
 };
 
-/* CLOSE */
-document.getElementById("close-modal").onclick = () => {
-  document.getElementById("video-modal").style.display = "none";
-  document.getElementById("modal-player").src = "";
-};
+/* ❌ CLOSE BUTTON (FIXED CORE ISSUE) */
+function closeModal() {
+  const modal = document.getElementById("video-modal");
+  const player = document.getElementById("modal-player");
 
-/* 📺 CREATE CARD */
-function createCard(v, index) {
+  modal.style.display = "none";
+
+  // ✅ IMPORTANT: stop video completely
+  player.src = "";
+}
+
+/* bind close button safely */
+document.addEventListener("DOMContentLoaded", () => {
+  const closeBtn = document.getElementById("close-modal");
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeModal);
+  }
+});
+
+/* 🎬 CARD CREATION */
+function createCard(video, index) {
   const card = document.createElement("div");
   card.className = "card";
 
   card.innerHTML = `
-    <img src="${v.thumbnail}">
-    <h3>S${v.season} • E${v.episode}</h3>
-    <p>${v.title}</p>
+    <img src="${video.thumbnail}">
+    <h3>S${video.season} • E${video.episode}</h3>
+    <p>${video.title}</p>
   `;
 
   card.onclick = () => openModal(index);
@@ -75,64 +82,44 @@ function createCard(v, index) {
   return card;
 }
 
-/* 📺 ROW RENDER */
-function renderRow(id, videos) {
-  const container = document.getElementById(id);
-  if (!container) return;
+/* 📺 RENDER */
+function render(videos) {
+  const grid = document.getElementById("video-grid");
+  grid.innerHTML = "";
 
-  container.innerHTML = "";
-  videos.forEach(v => {
-    const index = allVideos.findIndex(x => x.videoId === v.videoId);
-    container.appendChild(createCard(v, index));
+  videos.forEach((v, i) => {
+    grid.appendChild(createCard(v, i));
   });
 }
 
-/* 📺 CONTINUE */
-function renderContinue() {
-  const last = localStorage.getItem("lastWatched");
-  if (!last) return;
-
-  const v = allVideos[last];
-
-  const row = document.getElementById("continue-row");
-  const section = document.getElementById("continue-section");
-
-  section.style.display = "block";
-  row.innerHTML = "";
-
-  row.appendChild(createCard(v, last));
-}
-
-/* 📺 LOAD */
+/* 🔥 LOAD */
 async function loadVideos() {
   try {
+    const grid = document.getElementById("video-grid");
+    grid.innerHTML = "Loading episodes...";
+
     const res = await fetch(WORKER_URL);
     const data = await res.json();
 
+    if (!data.videos || !data.videos.length) {
+      grid.innerHTML = "No videos found";
+      return;
+    }
+
+    // enrich metadata
     allVideos = data.videos.map(v => ({
       ...v,
       ...parseMeta(v.title)
     }));
 
-    if (!allVideos.length) return;
+    render(allVideos);
 
-    setFeatured(allVideos[0]);
-
-    /* 🔥 TRENDING (first 6) */
-    renderRow("trending-row", allVideos.slice(0, 6));
-
-    /* 🆕 LATEST */
-    renderRow("latest-row", [...allVideos].reverse().slice(0, 6));
-
-    /* 📺 SEASON GROUP */
-    renderRow("season1-row", allVideos.filter(v => v.season === 1));
-    renderRow("season2-row", allVideos.filter(v => v.season === 2));
-
-    renderContinue();
-
-  } catch {
-    console.error("Failed to load");
+  } catch (err) {
+    console.error("Load error:", err);
+    document.getElementById("video-grid").innerHTML =
+      "Failed to load videos";
   }
 }
 
+/* 🚀 INIT */
 loadVideos();

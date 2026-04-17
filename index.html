@@ -47,20 +47,25 @@
   <h2>Season 2</h2>
   <div id="season2-row" class="row"></div>
 
-  <!-- 🎥 MODAL -->
-  <div id="video-modal" class="modal">
-    <div class="modal-content">
-      <span id="close-modal">&times;</span>
+ <!-- 🎥 MODAL -->
+<div id="video-modal" class="modal">
+  <div class="modal-content">
+    <span id="close-modal">&times;</span>
 
-      <iframe id="modal-player" allow="autoplay"></iframe>
+    <iframe 
+      id="modal-player"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen>
+    </iframe>
 
-      <div class="details">
-        <h2 id="episode-title"></h2>
-        <p id="episode-meta"></p>
-        <button id="next-btn">⏭ Next Episode</button>
-      </div>
+    <div class="details">
+      <h2 id="episode-title"></h2>
+      <p id="episode-meta"></p>
+      <button id="next-btn">⏭ Next Episode</button>
     </div>
   </div>
+</div>
 
   <script src="js/app.js"></script>
 </body>
