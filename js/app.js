@@ -1,95 +1,105 @@
-const WORKER_URL = "https://yt-studio-api.ruhdevopsytstudio.workers.dev";
+const API = "https://yt-studio-api.ruhdevopsytstudio.workers.dev";
 
-let allVideos = [];
-let currentIndex = 0;
+let videos = [];
+let current = 0;
 
-async function loadVideos() {
-  const grid = document.getElementById("video-grid");
+/* 🚀 LOAD */
+async function load() {
+  const res = await fetch(API);
+  const data = await res.json();
 
-  try {
-    grid.innerHTML = "Loading...";
+  videos = data.videos || [];
 
-    const res = await fetch(WORKER_URL);
-    const data = await res.json();
+  if (!videos.length) return;
 
-    allVideos = data.videos || [];
-
-    if (!allVideos.length) {
-      document.getElementById("featured-title").textContent =
-        "No episodes found";
-      return;
-    }
-
-    render(allVideos);
-    setFeatured(allVideos[0]); // ✅ ALWAYS SET FEATURED
-
-  } catch (e) {
-    console.error(e);
-
-    // ✅ FALLBACK FEATURED
-    document.getElementById("featured-title").textContent =
-      "Failed to load content";
-  }
+  setupHero(videos[0]);
+  renderRows();
 }
 
-/* ✅ FEATURED FIX */
-function setFeatured(video) {
-  const section = document.getElementById("featured");
-  const title = document.getElementById("featured-title");
-  const btn = document.getElementById("featured-btn");
+function setupHero(v) {
+  document.getElementById("hero-title").textContent = v.title;
 
-  section.style.backgroundImage = `url(${video.thumbnail})`;
-  title.textContent = video.title;
+  const heroVideo = document.getElementById("hero-video");
 
-  btn.onclick = () => openModal(0);
+  // 🎬 autoplay muted preview
+  heroVideo.src =
+    `https://www.youtube.com/embed/${v.videoId}` +
+    `?autoplay=1&mute=1&controls=0&loop=1&playlist=${v.videoId}&rel=0`;
+
+  document.getElementById("hero-btn").onclick = () => open(videos[0]);
 }
 
-/* RENDER */
-function render(videos) {
-  const grid = document.getElementById("video-grid");
-  grid.innerHTML = "";
+/* 📺 ROWS */
+function renderRows() {
+  const trending = document.getElementById("row-trending");
+  const latest = document.getElementById("row-latest");
 
-  videos.forEach((v, i) => {
-    const card = document.createElement("div");
-    card.className = "card";
+  trending.innerHTML = "";
+  latest.innerHTML = "";
 
-    card.innerHTML = `
-      <img src="${v.thumbnail}">
-      <h3>${v.title}</h3>
-    `;
+  videos.slice(0, 10).forEach((v, i) => {
+    const card = createCard(v, i);
+    trending.appendChild(card);
+  });
 
-    card.onclick = () => openModal(i);
-
-    grid.appendChild(card);
+  videos.slice().reverse().slice(0, 10).forEach((v, i) => {
+    const card = createCard(v, i);
+    latest.appendChild(card);
   });
 }
 
-/* MODAL */
-function openModal(index) {
-  currentIndex = index;
+/* 🎬 CARD */
+function createCard(v, i) {
+  const div = document.createElement("div");
+  div.className = "card";
 
-  const v = allVideos[index];
+  div.innerHTML = `
+    <img src="https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg">
+  `;
 
-  document.getElementById("video-modal").style.display = "block";
+  div.onmouseenter = () => hoverPreview(div, v.videoId);
+  div.onclick = () => open(v);
 
-  document.getElementById("modal-player").src =
-    `https://www.youtube.com/embed/${v.videoId}?autoplay=1&origin=https://ruhdevops.github.io`;
-
-  document.getElementById("episode-title").textContent = v.title;
-  document.getElementById("episode-meta").textContent = "Now Playing";
+  return div;
 }
 
-/* CLOSE */
-document.getElementById("close-modal").onclick = () => {
-  document.getElementById("video-modal").style.display = "none";
-  document.getElementById("modal-player").src = "";
+/* 🎥 HOVER PREVIEW */
+function hoverPreview(el, id) {
+  el.innerHTML = `
+    <iframe
+      src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0"
+      frameborder="0">
+    </iframe>
+  `;
+}
+
+/* 🎬 MODAL */
+function open(v) {
+  current = videos.indexOf(v);
+
+  const modal = document.getElementById("modal");
+  const player = document.getElementById("player");
+
+  modal.style.display = "block";
+
+  player.src =
+    `https://www.youtube.com/embed/${v.videoId}?autoplay=1&rel=0`;
+
+  document.getElementById("title").textContent = v.title;
+  document.getElementById("meta").textContent = "Now Playing";
+}
+
+/* ❌ CLOSE */
+document.getElementById("close").onclick = () => {
+  document.getElementById("modal").style.display = "none";
+  document.getElementById("player").src = "";
 };
 
-/* NEXT */
-document.getElementById("next-btn").onclick = () => {
-  if (currentIndex < allVideos.length - 1) {
-    openModal(currentIndex + 1);
+/* ⏭ NEXT */
+document.getElementById("next").onclick = () => {
+  if (current < videos.length - 1) {
+    open(videos[current + 1]);
   }
 };
 
-loadVideos();
+load();

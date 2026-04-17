@@ -2,43 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Ruh Al Tarikh</title>
+  <title>YT Studio</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-  <header class="header">
-    <h1>🎬 Ruh Al Tarikh</h1>
-    <p>Islamic Documentary Series</p>
-  </header>
-
-  <!-- ✅ FIXED FEATURED (ALWAYS VISIBLE) -->
-  <section class="featured" id="featured">
-    <div class="featured-overlay">
-      <h2 id="featured-title">Loading episodes...</h2>
-      <button id="featured-btn">▶ Watch Now</button>
+  <!-- 🎬 HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-overlay">
+      <h1 id="hero-title">Loading...</h1>
+      <p id="hero-desc">Cinematic Islamic Documentary Series</p>
+      <button id="hero-btn">▶ Play</button>
     </div>
+
+    <!-- 🎥 AUTOPLAY BACKGROUND VIDEO -->
+    <iframe id="hero-video" allow="autoplay; encrypted-media"></iframe>
   </section>
 
-  <div id="video-grid" class="grid"></div>
+  <!-- 📺 ROWS -->
+  <h2>🔥 Trending</h2>
+  <div id="row-trending" class="row"></div>
 
-  <!-- MODAL -->
-  <div id="video-modal" class="modal">
+  <h2>🆕 Latest Episodes</h2>
+  <div id="row-latest" class="row"></div>
+
+  <!-- 🎥 MODAL -->
+  <div id="modal" class="modal">
     <div class="modal-content">
-      <span id="close-modal">×</span>
 
-      <iframe
-        id="modal-player"
-        frameborder="0"
-        allow="autoplay; encrypted-media; fullscreen"
-        allowfullscreen>
-      </iframe>
+      <span id="close">×</span>
+
+      <iframe id="player" allow="autoplay; encrypted-media; fullscreen"></iframe>
 
       <div class="details">
-        <h3 id="episode-title"></h3>
-        <p id="episode-meta"></p>
-        <button id="next-btn">Next ▶</button>
+        <h2 id="title"></h2>
+        <p id="meta"></p>
+        <button id="next">Next ▶</button>
       </div>
 
     </div>
