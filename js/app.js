@@ -4,6 +4,7 @@ const grid = document.getElementById("video-grid");
 
 let allVideos = [];
 
+/* 🎬 HERO FEATURE */
 function setFeatured(video) {
   const section = document.getElementById("featured");
   const title = document.getElementById("featured-title");
@@ -11,7 +12,7 @@ function setFeatured(video) {
 
   if (!video) return;
 
-  section.style.display = "flex";
+  section.style.display = "block";
   section.style.backgroundImage = `url(${video.thumbnail})`;
 
   title.textContent = video.title;
@@ -21,21 +22,27 @@ function setFeatured(video) {
   };
 }
 
+/* 📺 LOAD VIDEOS */
 async function loadVideos() {
   try {
     grid.innerHTML = "<p>🎬 Loading...</p>";
 
     const res = await fetch(WORKER_URL);
+
+    if (!res.ok) throw new Error("API failed");
+
     const data = await res.json();
 
-    if (!data.videos || !data.videos.length) {
+    if (!data.videos || data.videos.length === 0) {
       grid.innerHTML = "<p>No videos found</p>";
       return;
     }
 
     allVideos = data.videos;
 
-    setFeatured(allVideos[0]); // ✅ FIXED
+    // 🎬 Set latest video as hero
+    setFeatured(allVideos[0]);
+
     render(allVideos);
 
   } catch (err) {
@@ -44,6 +51,7 @@ async function loadVideos() {
   }
 }
 
+/* 🎥 RENDER GRID */
 function render(videos) {
   grid.innerHTML = "";
 

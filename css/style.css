@@ -1,46 +1,74 @@
 body {
   margin: 0;
   font-family: Arial;
-  background: #0d0d0d;
+  background: #0b0b0b;
   color: white;
 }
 
+/* HEADER */
 .header {
   text-align: center;
   padding: 20px;
 }
 
+/* 🎬 HERO */
 .featured {
-  display: none;
-  height: 300px;
+  position: relative;
+  height: 80vh;
   background-size: cover;
   background-position: center;
-  display: flex;
-  align-items: center;
+  display: none;
+}
+
+.featured-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
   padding: 40px;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
 }
 
-.overlay {
-  background: rgba(0,0,0,0.6);
-  padding: 20px;
-  border-radius: 10px;
+.featured-overlay h1 {
+  font-size: 2.5rem;
+  margin: 0 0 10px;
 }
 
+.featured-overlay button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background: red;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* GRID */
 #video-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
   padding: 20px;
 }
 
+/* CARD */
 .card {
-  background: #1a1a1a;
-  margin: 10px;
-  padding: 10px;
+  background: #141414;
   border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s;
   cursor: pointer;
+}
+
+.card:hover {
+  transform: scale(1.05);
 }
 
 .card img {
   width: 100%;
-  border-radius: 10px;
+}
+
+.card h3 {
+  font-size: 14px;
+  padding: 10px;
 }
