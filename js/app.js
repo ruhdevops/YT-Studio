@@ -1,4 +1,4 @@
-const WORKER_URL = "https://old-sound-f9da.yt-studio-ruhaltarikh.workers.dev";
+const WORKER_URL = "https://yt-studio-api.ruhdevopsytstudio.workers.dev";
 
 const grid = document.getElementById("video-grid");
 
