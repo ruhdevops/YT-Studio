@@ -1,49 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>YT Studio</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
-
-<body>
-
-  <!-- 🎬 HERO -->
-  <section class="hero" id="hero">
-    <div class="hero-overlay">
-      <h1 id="hero-title">Loading...</h1>
-      <p id="hero-desc">Cinematic Islamic Documentary Series</p>
-      <button id="hero-btn">▶ Play</button>
-    </div>
-
-    <!-- 🎥 AUTOPLAY BACKGROUND VIDEO -->
-    <iframe id="hero-video" allow="autoplay; encrypted-media"></iframe>
-  </section>
-
-  <!-- 📺 ROWS -->
-  <h2>🔥 Trending</h2>
-  <div id="row-trending" class="row"></div>
-
-  <h2>🆕 Latest Episodes</h2>
-  <div id="row-latest" class="row"></div>
-
-  <!-- 🎥 MODAL -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-
-      <span id="close" role="button" tabindex="0" aria-label="Close modal">×</span>
-
-      <iframe id="player" allow="autoplay; encrypted-media; fullscreen"></iframe>
-
-      <div class="details">
-        <h2 id="title"></h2>
-        <p id="meta"></p>
-        <button id="next">Next ▶</button>
-      </div>
-
-    </div>
-  </div>
-
-  <script src="js/app.js"></script>
-</body>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YT Studio | Cinematic Video Gallery</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

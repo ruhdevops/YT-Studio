@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: oklch(10% 0 0);
+  --color-foreground: oklch(95% 0 0);
+  --color-card: oklch(14% 0 0);
+  --color-card-foreground: oklch(95% 0 0);
+  --color-popover: oklch(14% 0 0);
+  --color-popover-foreground: oklch(95% 0 0);
+  --color-primary: oklch(90% .05 85);
+  --color-primary-foreground: oklch(12% 0 0);
+  --color-secondary: oklch(18% 0 0);
+  --color-secondary-foreground: oklch(85% 0 0);
+  --color-muted: oklch(18% 0 0);
+  --color-muted-foreground: oklch(55% 0 0);
+  --color-accent: oklch(20% .03 85);
+  --color-accent-foreground: oklch(95% 0 0);
+  --color-destructive: oklch(57.7% .245 27.325);
+  --color-border: oklch(100% 0 0 / 0.08);
+  --color-input: oklch(100% 0 0 / 0.1);
+  --color-ring: oklch(90% .05 85 / 0.5);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
