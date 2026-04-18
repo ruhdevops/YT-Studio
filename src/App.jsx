@@ -22,12 +22,18 @@ export default function App() {
       })
       .then(data => {
         if (data.error) throw new Error(data.error);
+
+  useEffect(() => {
+    fetch(API)
+      .then(res => res.json())
+      .then(data => {
         setVideos(data.videos || []);
         setLoading(false);
       })
       .catch(err => {
         console.error("Fetch error:", err);
         setError(err.message);
+        console.error(err);
         setLoading(false);
       });
   }, []);
@@ -59,6 +65,8 @@ export default function App() {
             >
               Retry
             </button>
+          <div className="flex h-screen items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           </div>
         ) : (
           <>
@@ -75,6 +83,8 @@ export default function App() {
                   <p className="text-muted-foreground">No videos found in this channel.</p>
                 </div>
               )}
+              <VideoRow title="🔥 Trending" videos={videos.slice(0, 10)} onSelect={setSelectedVideo} />
+              <VideoRow title="🆕 Latest Episodes" videos={[...videos].reverse().slice(0, 10)} onSelect={setSelectedVideo} />
             </div>
           </>
         )}

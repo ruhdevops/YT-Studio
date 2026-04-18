@@ -13,3 +13,46 @@
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ruh Al Tarikh</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- 🌫 BLUR BACKGROUND -->
+  <div id="bg-blur"></div>
+
+  <!-- 🧊 GLASS HEADER -->
+  <header class="glass-header">
+    <h1>🎬 Ruh Al Tarikh</h1>
+  </header>
+
+  <!-- 🎬 HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-overlay glass">
+      <h1 id="hero-title">Loading...</h1>
+      <p>Islamic Documentary Series</p>
+      <button id="hero-btn">▶ Watch Now</button>
+    </div>
+  </section>
+
+  <!-- 📺 ROW -->
+  <h2 class="section-title">Episodes</h2>
+  <div id="video-row" class="row"></div>
+
+  <!-- 🎥 MODAL -->
+  <div id="modal" class="modal">
+    <div class="modal-content glass">
+      <span id="close">×</span>
+      <iframe id="player" allow="autoplay; encrypted-media; fullscreen"></iframe>
+      <h2 id="title"></h2>
+      <button id="next">Next ▶</button>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
