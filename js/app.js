@@ -25,7 +25,6 @@ function setHero(v) {
      url(https://i.ytimg.com/vi/${v.videoId}/maxresdefault.jpg) center/cover`;
 
   document.getElementById("hero-title").textContent = v.title;
-
   document.getElementById("hero-btn").onclick = () => open(v);
 }
 
@@ -38,9 +37,31 @@ function render(list) {
     const card = document.createElement("div");
     card.className = "card";
 
+    // default image
     card.innerHTML = `
       <img src="https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg">
     `;
+
+    // 🎥 HOVER PREVIEW
+    card.onmouseenter = () => {
+      card.innerHTML = `
+        <iframe 
+          src="https://www.youtube.com/embed/${v.videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${v.videoId}"
+          frameborder="0">
+        </iframe>
+      `;
+
+      // 🌫 BACKGROUND BLUR UPDATE
+      document.getElementById("bg-blur").style.backgroundImage =
+        `url(https://i.ytimg.com/vi/${v.videoId}/maxresdefault.jpg)`;
+    };
+
+    // restore thumbnail
+    card.onmouseleave = () => {
+      card.innerHTML = `
+        <img src="https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg">
+      `;
+    };
 
     card.onclick = () => open(v);
 
@@ -48,45 +69,7 @@ function render(list) {
   });
 }
 
-HEAD
-/* 🎬 CARD */
-function createCard(v, i) {
-  const div = document.createElement("div");
-  div.className = "card";
-  div.setAttribute("role", "button");
-  div.setAttribute("tabindex", "0");
-  div.setAttribute("aria-label", `Play ${v.title}`);
-
-  div.innerHTML = `
-    <img src="https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg" alt="">
-  `;
-
-  div.onmouseenter = () => hoverPreview(div, v.videoId);
-  div.onclick = () => open(v);
-  div.onkeydown = (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      open(v);
-    }
-  };
-
-  return div;
-}
-
-/* 🎥 HOVER PREVIEW */
-function hoverPreview(el, id) {
-  el.innerHTML = `
-    <iframe
-      src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0"
-      frameborder="0">
-    </iframe>
-  `;
-}
-
-/* 🎬 MODAL */
-
-/* OPEN MODAL */
- a34406d (Premium UI upgrade: hero cinematic + smooth cards + clean OTT layout)
+/* MODAL */
 function open(v) {
   current = videos.indexOf(v);
 
@@ -101,36 +84,13 @@ function open(v) {
   document.getElementById("title").textContent = v.title;
 }
 
- HEAD
-/* ❌ CLOSE */
-const closeModal = () => {
-
 /* CLOSE */
 document.getElementById("close").onclick = () => {
->>>>>>> a34406d (Premium UI upgrade: hero cinematic + smooth cards + clean OTT layout)
   document.getElementById("modal").style.display = "none";
   document.getElementById("player").src = "";
 };
 
- HEAD
-document.getElementById("close").onclick = closeModal;
-document.getElementById("close").onkeydown = (e) => {
-  if (e.key === "Enter" || e.key === " ") {
-    e.preventDefault();
-    closeModal();
-  }
-};
-
-window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    closeModal();
-  }
-});
-
-/* ⏭ NEXT */
-
 /* NEXT */
->>>>>>> a34406d (Premium UI upgrade: hero cinematic + smooth cards + clean OTT layout)
 document.getElementById("next").onclick = () => {
   if (current < videos.length - 1) {
     open(videos[current + 1]);

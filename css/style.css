@@ -1,139 +1,113 @@
-/* 🔥 GLOBAL */
+/* 🔥 BASE */
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
   background: #0b0b0b;
   color: white;
+  overflow-x: hidden;
 }
 
-/* 🎬 HERO */
+/* 🌫 BACKGROUND BLUR */
+#bg-blur {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(40px);
+  opacity: 0.25;
+  z-index: -1;
+  transition: 0.5s;
+}
+
+/* 🧊 GLASS EFFECT */
+.glass {
+  backdrop-filter: blur(12px);
+  background: rgba(20,20,20,0.5);
+  border-radius: 10px;
+}
+
+/* HEADER */
+.glass-header {
+  position: fixed;
+  width: 100%;
+  padding: 15px;
+  backdrop-filter: blur(10px);
+  background: rgba(0,0,0,0.4);
+  z-index: 10;
+}
+
+/* HERO */
 .hero {
   height: 70vh;
-  background: linear-gradient(to top, black, transparent),
-              url('https://i.ytimg.com/vi/Zzcdtm7Il9U/maxresdefault.jpg') center/cover;
   display: flex;
   align-items: flex-end;
 }
 
 .hero-overlay {
-  padding: 50px;
+  padding: 40px;
+  width: 100%;
 }
 
 .hero h1 {
-  font-size: 40px;
-  margin: 0;
-}
-
-.hero-sub {
-  opacity: 0.8;
-  margin-top: 5px;
+  font-size: 42px;
 }
 
 /* BUTTON */
 button {
   background: #b22222;
   border: none;
-  padding: 12px 20px;
-  margin-top: 10px;
+  padding: 10px 18px;
   color: white;
-  cursor: pointer;
   border-radius: 6px;
-  transition: 0.3s;
+  cursor: pointer;
 }
 
-button:hover {
-  background: #ff4444;
-}
-
-/* SECTION */
-.section-title {
-  margin-left: 20px;
-}
-
-/* 📺 ROW */
+/* ROW */
 .row {
   display: flex;
   gap: 15px;
-  overflow-x: auto;
   padding: 20px;
+  overflow-x: auto;
 }
 
-/* 🎬 CARD */
+/* CARD */
 .card {
   min-width: 220px;
-  background: #141414;
   border-radius: 12px;
   overflow: hidden;
-  transition: 0.3s ease;
+  background: #141414;
   cursor: pointer;
+  transition: 0.3s;
+  position: relative;
 }
 
 .card:hover {
-  transform: scale(1.08);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+  transform: scale(1.1);
 }
 
-.card img {
+.card img,
+.card iframe {
   width: 100%;
+  height: 130px;
+  object-fit: cover;
 }
 
-/* 🎥 MODAL */
+/* MODAL */
 .modal {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.95);
+  background: rgba(0,0,0,0.9);
 }
 
 .modal-content {
   width: 90%;
   max-width: 900px;
-  margin: 40px auto;
+  margin: 50px auto;
+  padding: 20px;
 }
 
 #player {
   width: 100%;
   height: 450px;
-<<<<<<< HEAD
-  border: none;
 }
-/* ✨ UX TOUCHES: FOCUS STATES */
-.card:focus-visible,
-#hero-btn:focus-visible,
-#close:focus-visible,
-#next:focus-visible {
-  outline: 3px solid #e50914;
-  outline-offset: 4px;
-}
-
-#hero-btn, #next {
-  cursor: pointer;
-  background: white;
-  color: black;
-  border: none;
-  padding: 10px 20px;
-  font-weight: bold;
-  border-radius: 4px;
-  transition: 0.2s;
-}
-
-#hero-btn:hover, #next:hover {
-  background: #e6e6e6;
-
-  a34406d (Premium UI upgrade: hero cinematic + smooth cards + clean OTT layout)
-}
-
-#close {
-  float: right;
-
-HEAD
-  font-size: 30px;
-  cursor: pointer;
-  padding: 0 10px;
-  border-radius: 4px;
-}
-
-  font-size: 28px;
-  cursor: pointer;
-}
-  a34406d (Premium UI upgrade: hero cinematic + smooth cards + clean OTT layout)

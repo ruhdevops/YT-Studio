@@ -1,20 +1,4 @@
 <!DOCTYPE html>
- HEAD
-<html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>YT Studio | Cinematic Video Gallery</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -24,11 +8,19 @@
 
 <body>
 
+  <!-- 🌫 BLUR BACKGROUND -->
+  <div id="bg-blur"></div>
+
+  <!-- 🧊 GLASS HEADER -->
+  <header class="glass-header">
+    <h1>🎬 Ruh Al Tarikh</h1>
+  </header>
+
   <!-- 🎬 HERO -->
   <section class="hero" id="hero">
-    <div class="hero-overlay">
+    <div class="hero-overlay glass">
       <h1 id="hero-title">Loading...</h1>
-      <p class="hero-sub">Islamic Documentary Series</p>
+      <p>Islamic Documentary Series</p>
       <button id="hero-btn">▶ Watch Now</button>
     </div>
   </section>
@@ -39,23 +31,14 @@
 
   <!-- 🎥 MODAL -->
   <div id="modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content glass">
       <span id="close">×</span>
-
-      <iframe
-        id="player"
-        allow="autoplay; encrypted-media; fullscreen"
-        allowfullscreen>
-      </iframe>
-
-      <div class="details">
-        <h2 id="title"></h2>
-        <button id="next">Next ▶</button>
-      </div>
+      <iframe id="player" allow="autoplay; encrypted-media; fullscreen"></iframe>
+      <h2 id="title"></h2>
+      <button id="next">Next ▶</button>
     </div>
   </div>
 
   <script src="js/app.js"></script>
 </body>
 </html>
- a34406d (Premium UI upgrade: hero cinematic + smooth cards + clean OTT layout)
