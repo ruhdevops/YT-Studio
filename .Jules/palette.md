@@ -11,3 +11,7 @@
 
 ## Rejected Design Changes
 - **React Migration:** Considered finishing the React migration mentioned in memory, but decided against it to avoid breaking existing legacy DOM logic as per instructions.
+
+## 2025-05-22 - Accessibility and Cleanup
+**Learning:** Redundant code and structural duplicates (like multiple modals) lead to inconsistent UX and accessibility gaps. Keyboard navigation (Enter/Space/Escape) and proper ARIA roles are essential for an inclusive video platform.
+**Action:** Always audit the HTML for duplicates before adding new features and ensure all custom interactive elements (like div-based cards) have role="button" and keyboard listeners.
