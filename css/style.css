@@ -257,3 +257,224 @@ body {
   .modal-box { margin: 10vh auto; }
   #close { right: 0; top: -50px; }
 }
+
+/* SAAS LANDING STYLES */
+:root {
+  --saas-primary: oklch(0.7 0.2 60);
+  --saas-bg: oklch(0.15 0.05 250);
+  --saas-card-bg: rgba(255, 255, 255, 0.03);
+  --saas-border: rgba(255, 255, 255, 0.1);
+  --saas-glow: oklch(0.7 0.2 60 / 0.15);
+}
+
+.saas-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.saas-landing {
+  background: var(--bg-deep);
+  color: var(--text-main);
+  padding-bottom: 80px;
+}
+
+/* HERO */
+.saas-hero {
+  position: relative;
+  padding: 120px 0 80px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.saas-hero-content {
+  position: relative;
+  z-index: 2;
+  animation: saas-fadeIn 0.8s ease-out;
+}
+
+.saas-headline {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  background: linear-gradient(to bottom, #fff, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.saas-subheadline {
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto 40px;
+}
+
+.saas-hero-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--saas-glow) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* BUTTONS */
+.saas-cta-group {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.saas-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1rem;
+}
+
+.saas-btn-primary {
+  background: linear-gradient(135deg, var(--saas-primary), oklch(0.6 0.2 40));
+  color: #000;
+  box-shadow: 0 4px 20px var(--saas-glow);
+}
+
+.saas-btn-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 30px var(--saas-glow);
+}
+
+.saas-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--saas-border);
+}
+
+.saas-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* FEATURES */
+.saas-features {
+  padding: 80px 0;
+}
+
+.saas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .saas-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.saas-feature-card {
+  background: var(--saas-card-bg);
+  backdrop-filter: blur(12px);
+  padding: 32px;
+  border-radius: 20px;
+  border: 1px solid var(--saas-border);
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.saas-feature-card:hover {
+  transform: translateY(-8px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--saas-primary);
+}
+
+.saas-feature-icon {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.saas-feature-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #fff;
+}
+
+.saas-feature-desc {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* BENEFITS */
+.saas-benefits {
+  padding: 80px 0;
+  text-align: center;
+}
+
+.saas-section-title {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  margin-bottom: 40px;
+}
+
+.saas-benefits-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.saas-benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.saas-check {
+  color: var(--saas-primary);
+  font-weight: bold;
+}
+
+/* BOTTOM CTA */
+.saas-bottom-cta {
+  padding: 80px 0;
+  text-align: center;
+}
+
+.saas-cta-title {
+  font-size: 2rem;
+  margin-bottom: 32px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ANIMATIONS */
+@keyframes saas-fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* MOBILE FIXES */
+@media (max-width: 640px) {
+  .saas-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .saas-hero { padding: 80px 0 40px; }
+  .saas-cta-title { font-size: 1.5rem; }
+}
