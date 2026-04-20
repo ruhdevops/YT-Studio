@@ -3,7 +3,6 @@
 
   /* CONFIG */
   const API = "https://yt-studio-api.ruhdevopsytstudio.workers.dev";
-  const FALLBACK_DATA = "data/videos.json";
   const CACHE_KEY = "yt_studio_videos_cache";
   const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
   const PROGRESS_KEY = "watch_progress";
@@ -11,7 +10,6 @@
 
   /* STATE */
   let videos = [];
-  let current = null;
   let currentVideo = null;
   let progressInterval = null;
 
@@ -32,67 +30,43 @@
     errorContainer: document.getElementById("error-container"),
     errorMessage: document.getElementById("error-message"),
     retryBtn: document.getElementById("retry-btn"),
-    hoverPreview: document.getElementById("hover-preview")
+    hoverPreview: document.getElementById("hover-preview"),
+    loadingState: document.getElementById("loading-state")
   };
 
   /* DATA HELPERS */
-  function normalizeVideo(v) {
-    return {
-      id: v.videoId || v.id,
-      title: v.title || "Untitled Video",
-      thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.videoId || v.id}/mqdefault.jpg`,
-      publishedAt: v.publishedAt || null,
-      channel: v.channel || "Ruh Al Tarikh"
-    };
-  }
-
   async function fetchVideos() {
-    // 1. Try Cache
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
       try {
         const { data, timestamp } = JSON.parse(cached);
-        if (Date.now() - timestamp < CACHE_EXPIRY) {
-          console.log("Using cached video data");
-          return data;
-        }
-      } catch (e) {
-        localStorage.removeItem(CACHE_KEY);
-      }
+        if (Date.now() - timestamp < CACHE_EXPIRY) return data;
+      } catch (e) { localStorage.removeItem(CACHE_KEY); }
     }
 
-    // 2. Try API
     try {
       const res = await fetch(API);
-      if (!res.ok) throw new Error("API responded with " + res.status);
+      if (!res.ok) throw new Error("API error: " + res.status);
       const json = await res.json();
-      const fetchedVideos = (json.videos || json).map(normalizeVideo);
-
-      localStorage.setItem(CACHE_KEY, JSON.stringify({
-        data: fetchedVideos,
-        timestamp: Date.now()
+      const fetchedVideos = (json.videos || []).map(v => ({
+        id: v.id,
+        title: v.title || "Untitled",
+        thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`,
+        publishedAt: v.publishedAt,
+        channel: v.channel || "Ruh Al Tarikh"
       }));
+
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ data: fetchedVideos, timestamp: Date.now() }));
       return fetchedVideos;
     } catch (e) {
-      console.warn("Primary API failed, trying fallback...", e);
-
-      // 3. Try Fallback
-      try {
-        const res = await fetch(FALLBACK_DATA);
-        if (!res.ok) throw new Error("Fallback file not found");
-        const json = await res.json();
-        return json.map(normalizeVideo);
-      } catch (err) {
-        throw new Error("All data sources failed");
-      }
+      console.error("Fetch failed:", e);
+      throw e;
     }
   }
 
   /* STORAGE HELPERS */
   function getProgress() {
-    try {
-      return JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}");
-    } catch (e) { return {}; }
+    try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}"); } catch (e) { return {}; }
   }
 
   function saveProgress(id, time, percent) {
@@ -102,10 +76,7 @@
   }
 
   function setLastPlayed(video) {
-    localStorage.setItem(LAST_PLAYED_KEY, JSON.stringify({
-      id: video.id,
-      timestamp: Date.now()
-    }));
+    localStorage.setItem(LAST_PLAYED_KEY, JSON.stringify({ id: video.id, timestamp: Date.now() }));
   }
 
   function getLastPlayed() {
@@ -115,195 +86,28 @@
     } catch (e) { return null; }
   }
 
-  /* UI RENDERING */
+  /* UI HELPERS */
+  function showLoading() { if (elements.loadingState) elements.loadingState.style.display = "flex"; }
+  function hideLoading() { if (elements.loadingState) elements.loadingState.style.display = "none"; }
+
   function showError(msg) {
     if (elements.errorContainer) {
       elements.errorContainer.style.display = "block";
       elements.errorMessage.textContent = msg;
     }
-    if (elements.heroSection) elements.heroSection.style.display = "none";
   }
 
-  function hideError() {
-    if (elements.errorContainer) elements.errorContainer.style.display = "none";
-    if (elements.heroSection) elements.heroSection.style.display = "flex";
-  }
+  function hideError() { if (elements.errorContainer) elements.errorContainer.style.display = "none"; }
 
-  function setHero(v) {
-    if (!v) return;
-    if (elements.heroTitle) elements.heroTitle.textContent = v.title;
-
-    const imgUrl = `https://i.ytimg.com/vi/${v.id}/maxresdefault.jpg`;
-
-    if (elements.bg) {
-      elements.bg.style.backgroundImage = `url(${imgUrl})`;
-    }
-    if (elements.heroSection) {
-      elements.heroSection.style.background = `linear-gradient(to top, var(--bg-deep), transparent), url(${imgUrl}) center/cover`;
-    }
-    if (elements.heroBtn) {
-      elements.heroBtn.onclick = () => openModal(v);
-    }
-  }
-
-  function renderContinue() {
-    const row = document.getElementById("continue-row");
-    if (!row) return;
-
-    const progress = getProgress();
-    row.innerHTML = "";
-
-    const keys = Object.keys(progress);
-    const title = row.previousElementSibling;
-
-    if (!keys.length) {
-       row.style.display = 'none';
-       if (title && title.classList.contains('section')) title.style.display = 'none';
-       return;
-    } else {
-       row.style.display = 'flex';
-       if (title && title.classList.contains('section')) title.style.display = 'block';
-    }
-
-    keys.forEach(id => {
-      const v = videos.find(x => x.videoId === id);
-      if (!v) return;
-
-      const card = document.createElement("div");
-      card.className = "card";
-      card.setAttribute("role", "button");
-      card.setAttribute("tabindex", "0");
-      card.setAttribute("aria-label", `Continue watching ${v.title}`);
-      card.innerHTML = `
-        <img src="https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg" alt="${v.title} thumbnail">
-        <div class="progress" style="width:${progress[id].percent || 0}%"></div>
-      `;
-      card.onclick = () => openModal(v, progress[id].time || 0);
-      card.onkeydown = (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openModal(v, progress[id].time || 0);
-        }
-      };
-      row.appendChild(card);
-    });
-  }
-
-  function render() {
-    const grid = document.getElementById("grid");
-    const preview = document.getElementById("hover-preview");
-    if (!grid) return;
-
-    grid.innerHTML = "";
+  /* RENDERING */
   function renderGrid() {
     if (!elements.grid) return;
     elements.grid.innerHTML = "";
-
     videos.forEach(v => {
       const card = document.createElement("div");
       card.className = "card";
-      card.setAttribute("role", "button");
-      card.setAttribute("tabindex", "0");
-      card.setAttribute("aria-label", `Watch ${v.title}`);
-      card.innerHTML = `<img src="https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg" alt="${v.title} thumbnail">`;
       card.innerHTML = `<img src="${v.thumbnail}" loading="lazy" alt="${v.title}">`;
-
-      card.onmouseenter = () => {
-        if (elements.hoverPreview && window.innerWidth > 768) {
-          elements.hoverPreview.style.display = "block";
-          elements.hoverPreview.src = `https://www.youtube.com/embed/${v.id}?autoplay=1&mute=1&controls=0`;
-        }
-      };
-
-      card.onmousemove = (e) => {
-        if (elements.hoverPreview && window.innerWidth > 768) {
-          elements.hoverPreview.style.top = e.clientY + 15 + "px";
-          elements.hoverPreview.style.left = e.clientX + 15 + "px";
-        }
-      };
-
-      card.onmouseleave = () => {
-        if (elements.hoverPreview) {
-          elements.hoverPreview.style.display = "none";
-          elements.hoverPreview.src = "";
-        }
-      };
-
       card.onclick = () => openModal(v);
-      card.onkeydown = (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openModal(v);
-        }
-      };
-      grid.appendChild(card);
-    });
-  }
-
-  function openModal(v, startTime = 0) {
-    if (!v) return;
-    current = v;
-
-    const modal = document.getElementById("modal");
-    const player = document.getElementById("player");
-    const title = document.getElementById("video-title");
-
-    if (modal) modal.style.display = "block";
-    if (player) {
-      player.src = `https://www.youtube.com/embed/${v.videoId}?autoplay=1&start=${startTime}`;
-      trackProgress(v.videoId, player);
-    }
-    if (title) title.textContent = v.title;
-
-    // Focus close button for accessibility
-    const closeBtn = document.getElementById("close");
-    if (closeBtn) closeBtn.focus();
-  }
-
-  function trackProgress(id, player) {
-    if (!player) return;
-
-    if (progressInterval) clearInterval(progressInterval);
-
-    progressInterval = setInterval(() => {
-      try {
-        // Attempting to read from iframe might fail due to CORS
-        // Real tracking would require YouTube IFrame Player API
-      } catch (e) {}
-    }, 5000);
-  }
-
-  function setupEventListeners() {
-    const closeBtn = document.getElementById("close");
-    if (closeBtn) {
-      const closeModal = () => {
-        const modal = document.getElementById("modal");
-        const player = document.getElementById("player");
-        if (modal) modal.style.display = "none";
-        if (player) player.src = "";
-        if (progressInterval) clearInterval(progressInterval);
-        renderContinue();
-      };
-      closeBtn.onclick = closeModal;
-      closeBtn.onkeydown = (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          closeModal();
-        }
-      };
-    }
-
-    // Close modal on Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        const modal = document.getElementById("modal");
-        if (modal && modal.style.display === "block") {
-          const closeBtn = document.getElementById("close");
-          if (closeBtn) closeBtn.click();
-        }
-      }
-    });
-  }
       elements.grid.appendChild(card);
     });
   }
@@ -311,49 +115,53 @@
   function renderContinue() {
     if (!elements.continueRow) return;
     const progress = getProgress();
-    const keys = Object.keys(progress).sort((a, b) => progress[b].updatedAt - progress[a].updatedAt);
-
-    elements.continueRow.innerHTML = "";
-
-    const items = keys.map(id => ({ id, ...progress[id] }))
+    const items = Object.keys(progress)
+      .map(id => ({ id, ...progress[id] }))
       .filter(p => videos.find(v => v.id === p.id))
+      .sort((a, b) => b.updatedAt - a.updatedAt)
       .slice(0, 10);
 
-    if (items.length === 0) {
-      elements.continueSection.style.display = "none";
-      elements.continueRow.style.display = "none";
+    if (!items.length) {
+      if (elements.continueSection) elements.continueSection.style.display = "none";
       return;
     }
 
-    elements.continueSection.style.display = "block";
-    elements.continueRow.style.display = "flex";
-
+    if (elements.continueSection) elements.continueSection.style.display = "block";
+    elements.continueRow.innerHTML = "";
     items.forEach(item => {
       const v = videos.find(x => x.id === item.id);
       const card = document.createElement("div");
       card.className = "card";
-      card.innerHTML = `
-        <img src="${v.thumbnail}" loading="lazy" alt="${v.title}">
-        <div class="progress" style="width: ${item.percent}%;"></div>
-      `;
+      card.innerHTML = `<img src="${v.thumbnail}" loading="lazy"><div class="progress" style="width: ${item.percent}%"></div>`;
       card.onclick = () => openModal(v, item.time);
       elements.continueRow.appendChild(card);
     });
   }
 
-  /* MODAL LOGIC */
-  function openModal(v, startTime = 0) {
-    if (!v) return;
+  function setHero(v) {
+    if (!v || !elements.heroTitle) return;
+    elements.heroTitle.textContent = v.title;
+    const img = `https://i.ytimg.com/vi/${v.id}/maxresdefault.jpg`;
+    if (elements.bg) elements.bg.style.backgroundImage = `url(${img})`;
+    if (elements.heroSection) elements.heroSection.style.background = `linear-gradient(to top, var(--bg-deep), transparent), url(${img}) center/cover`;
+    if (elements.heroBtn) elements.heroBtn.onclick = () => openModal(v);
+  }
+
+  /* MODAL */
+  function openModal(v, start = 0) {
     currentVideo = v;
     setLastPlayed(v);
-
     if (elements.modal) elements.modal.style.display = "block";
     if (elements.videoTitle) elements.videoTitle.textContent = v.title;
-    if (elements.player) {
-      elements.player.src = `https://www.youtube.com/embed/${v.id}?autoplay=1&start=${startTime}&enablejsapi=1`;
-    }
+    if (elements.player) elements.player.src = `https://www.youtube.com/embed/${v.id}?autoplay=1&start=${start}`;
 
-    startTracking(v.id);
+    // Simulate tracking for demo purposes
+    if (progressInterval) clearInterval(progressInterval);
+    let time = start;
+    progressInterval = setInterval(() => {
+      time += 5;
+      saveProgress(v.id, time, Math.min(100, (time / 600) * 100)); // Assume 10min avg
+    }, 5000);
   }
 
   function closeModal() {
@@ -363,57 +171,27 @@
     renderContinue();
   }
 
-  function startTracking(videoId) {
-    if (progressInterval) clearInterval(progressInterval);
-
-    // Note: To get precise time via YouTube IFrame API, we would need to load the API script.
-    // For now, we'll use a simplified version since we can't easily access contentWindow properties
-    // due to cross-origin restrictions unless the YouTube API is properly initialized.
-    // However, the previous code attempted it, so we'll keep a safe placeholder or try/catch.
-
-    progressInterval = setInterval(() => {
-      try {
-        // This will likely fail due to CORS unless using the official YouTube IFrame API PostMessage
-        // But we'll keep the logic structure for future enhancement
-        const player = elements.player;
-        // In a real SaaS app, we'd use: player.contentWindow.postMessage('{"event":"command","func":"getCurrentTime","args":""}', '*');
-      } catch (e) {}
-    }, 5000);
-  }
-
-  /* INITIALIZATION */
+  /* INIT */
   async function init() {
     hideError();
+    showLoading();
     try {
       videos = await fetchVideos();
-
-      if (!videos.length) {
-        showError("No videos available at the moment.");
-        return;
-      }
-
-      const lastPlayed = getLastPlayed();
-      setHero(lastPlayed || videos[0]);
+      if (!videos.length) return showError("No videos found.");
+      setHero(getLastPlayed() || videos[0]);
       renderGrid();
       renderContinue();
     } catch (e) {
-      showError("Failed to load videos. Please check your connection.");
-      console.error(e);
+      showError("Failed to load content.");
+    } finally {
+      hideLoading();
     }
   }
 
-  /* EVENT LISTENERS */
-  if (elements.closeBtn) {
-    elements.closeBtn.onclick = closeModal;
-  }
+  /* EVENTS */
+  if (elements.closeBtn) elements.closeBtn.onclick = closeModal;
+  if (elements.retryBtn) elements.retryBtn.onclick = init;
+  window.onclick = (e) => { if (e.target === elements.modal) closeModal(); };
 
-  if (elements.retryBtn) {
-    elements.retryBtn.onclick = init;
-  }
-
-  window.onclick = (event) => {
-    if (event.target === elements.modal) closeModal();
-  };
-
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener("DOMContentLoaded", init);
 })();

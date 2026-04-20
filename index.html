@@ -21,6 +21,11 @@
 
   <!-- APP ROOT START -->
   <div id="app-root">
+    <!-- LOADING STATE -->
+    <div id="loading-state" class="loading-state" style="display: none;">
+      <div class="spinner"></div>
+      <p>Loading premium content...</p>
+    </div>
     <!-- ERROR STATE -->
     <div id="error-container" class="error-container" style="display: none;">
       <p id="error-message"></p>
@@ -51,8 +56,6 @@
       <div class="modal-box">
         <span id="close" role="button" tabindex="0" aria-label="Close modal">×</span>
         <iframe id="player" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        <span id="close" aria-label="Close modal">×</span>
-        <iframe id="player" allow="autoplay; encrypted-media" allowfullscreen title="Video Player"></iframe>
         <h2 id="video-title"></h2>
       </div>
     </div>
@@ -132,7 +135,6 @@
   </main>
   <!-- SAAS LANDING END -->
 
-  <script src="js/app.js" type="module"></script>
-  <script src="js/app.js" type="module" defer></script>
+  <script src="js/app.js" defer></script>
 </body>
 </html>

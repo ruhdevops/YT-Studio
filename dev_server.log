@@ -1,5 +1,5 @@
 
-> yt-studio-api@0.0.0 dev
+> yt-studio-api@0.0.0 dev /app
 > wrangler dev
 
 

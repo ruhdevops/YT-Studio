@@ -1,15 +1,10 @@
 
-  VITE v8.0.9  ready in 616 ms
+  VITE v8.0.9  ready in 589 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-7:25:54 AM [vite] Internal server error: Missing closing } at @media (max-width: 640px)
-  Plugin: @tailwindcss/vite:generate:serve
-  File: /app/css/style.css?direct
-      at Se (file:///app/node_modules/.pnpm/tailwindcss@4.2.2/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:1:3974)
-      at yf (file:///app/node_modules/.pnpm/tailwindcss@4.2.2/node_modules/tailwindcss/dist/chunk-F4544Y4M.mjs:38:1384)
-      at uu (file:///app/node_modules/.pnpm/@tailwindcss+node@4.2.2/node_modules/@tailwindcss/node/dist/index.mjs:10:3463)
-      at B.generate (file:///app/node_modules/.pnpm/@tailwindcss+vite@4.2.2_vite@8.0.9_@types+node@25.6.0_esbuild@0.27.3_jiti@2.6.1_/node_modules/@tailwindcss/vite/dist/index.mjs:1:5242)
-      at TransformPluginContext.handler (file:///app/node_modules/.pnpm/@tailwindcss+vite@4.2.2_vite@8.0.9_@types+node@25.6.0_esbuild@0.27.3_jiti@2.6.1_/node_modules/@tailwindcss/vite/dist/index.mjs:1:2726)
-      at EnvironmentPluginContainer.transform (file:///app/node_modules/.pnpm/vite@8.0.9_@types+node@25.6.0_esbuild@0.27.3_jiti@2.6.1/node_modules/vite/dist/node/chunks/node.js:30141:51)
-      at loadAndTransform (file:///app/node_modules/.pnpm/vite@8.0.9_@types+node@25.6.0_esbuild@0.27.3_jiti@2.6.1/node_modules/vite/dist/node/chunks/node.js:24489:48)
+11:46:43 AM [vite] (client) page reload index.html
+11:46:43 AM [vite] (client) page reload index.html
+11:47:24 AM [vite] (client) page reload js/app.js
+11:48:49 AM [vite] (client) hmr update /css/style.css?direct
+11:51:33 AM [vite] (client) page reload index.html
