@@ -1,0 +1,9 @@
+
+> yt-studio-api@0.0.0 dev
+> wrangler dev
+
+
+ ⛅️ wrangler 4.83.0
+───────────────────
+⎔ Starting local server...
+[wrangler:info] Ready on http://localhost:8787
