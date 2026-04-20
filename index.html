@@ -35,6 +35,19 @@
     <!-- 📺 ALL EPISODES -->
     <h2 class="section">Episodes</h2>
     <div id="grid" class="grid"></div>
+
+    <!-- 🎥 HOVER PREVIEW -->
+    <iframe id="hover-preview"></iframe>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal">
+      <div class="modal-box">
+        <span id="close">×</span>
+        <iframe id="player" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <h2 id="video-title"></h2>
+      </div>
+    </div>
+  </div>
   </div>
   <!-- APP ROOT END -->
 
@@ -112,6 +125,7 @@
   </main>
   <!-- SAAS LANDING END -->
 
+  <script src="js/app.js" type="module"></script>
   <!-- 🎥 HOVER PREVIEW -->
   <iframe id="hover-preview"></iframe>
 
