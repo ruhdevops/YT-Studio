@@ -7,5 +7,6 @@
 ───────────────────
 ⎔ Starting local server...
 [wrangler:info] Ready on http://localhost:8787
-[wrangler:info] GET / 400 Bad Request (103ms)
- ELIFECYCLE  Command failed.
+⎔ Reloading local server...
+⎔ Local server updated and ready
+[wrangler:info] GET / 500 Internal Server Error (21ms)

@@ -1,6 +1,0 @@
-
- ⛅️ wrangler 4.83.0
-───────────────────
-⎔ Starting local server...
-[wrangler:info] Ready on http://localhost:8787
-[wrangler:info] GET / 400 Bad Request (80ms)

@@ -30,7 +30,6 @@
     errorContainer: document.getElementById("error-container"),
     errorMessage: document.getElementById("error-message"),
     retryBtn: document.getElementById("retry-btn"),
-    hoverPreview: document.getElementById("hover-preview"),
     loadingState: document.getElementById("loading-state")
   };
 
@@ -102,14 +101,16 @@
   /* RENDERING */
   function renderGrid() {
     if (!elements.grid) return;
-    elements.grid.innerHTML = "";
+    const fragment = document.createDocumentFragment();
     videos.forEach(v => {
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `<img src="${v.thumbnail}" loading="lazy" alt="${v.title}">`;
       card.onclick = () => openModal(v);
-      elements.grid.appendChild(card);
+      fragment.appendChild(card);
     });
+    elements.grid.innerHTML = "";
+    elements.grid.appendChild(fragment);
   }
 
   function renderContinue() {
@@ -127,15 +128,17 @@
     }
 
     if (elements.continueSection) elements.continueSection.style.display = "block";
-    elements.continueRow.innerHTML = "";
+    const fragment = document.createDocumentFragment();
     items.forEach(item => {
       const v = videos.find(x => x.id === item.id);
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `<img src="${v.thumbnail}" loading="lazy"><div class="progress" style="width: ${item.percent}%"></div>`;
       card.onclick = () => openModal(v, item.time);
-      elements.continueRow.appendChild(card);
+      fragment.appendChild(card);
     });
+    elements.continueRow.innerHTML = "";
+    elements.continueRow.appendChild(fragment);
   }
 
   function setHero(v) {
@@ -153,14 +156,17 @@
     setLastPlayed(v);
     if (elements.modal) elements.modal.style.display = "block";
     if (elements.videoTitle) elements.videoTitle.textContent = v.title;
-    if (elements.player) elements.player.src = `https://www.youtube.com/embed/${v.id}?autoplay=1&start=${start}`;
 
-    // Simulate tracking for demo purposes
+    // Iframe Facade: Only load the actual player when requested
+    if (elements.player) {
+      elements.player.src = `https://www.youtube.com/embed/${v.id}?autoplay=1&start=${start}`;
+    }
+
     if (progressInterval) clearInterval(progressInterval);
     let time = start;
     progressInterval = setInterval(() => {
       time += 5;
-      saveProgress(v.id, time, Math.min(100, (time / 600) * 100)); // Assume 10min avg
+      saveProgress(v.id, time, Math.min(100, (time / 600) * 100));
     }, 5000);
   }
 
