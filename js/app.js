@@ -207,8 +207,13 @@
   if (elements.retryBtn) elements.retryBtn.onclick = init;
   window.onclick = (e) => { if (e.target === elements.modal) closeModal(); };
 
-  document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("DOMContentLoaded", () => {
+    init();
+    setupHeroButton();
+});
 })();
+
+
 
 
 
