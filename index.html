@@ -9,168 +9,89 @@
   <link rel="preconnect" href="https://www.youtube.com">
   <link rel="preconnect" href="https://yt-studio-api.ruhdevopsytstudio.workers.dev">
   <link rel="dns-prefetch" href="https://yt-studio-api.ruhdevopsytstudio.workers.dev">
-  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
-
 <body>
 
-  <div id="bg"></div>
+<div id="bg"></div>
 
-  <header class="header">
-    <h1>🎬 Ruh Al Tarikh</h1>
-  </header>
+<header class="header">
+  <h1>🎬 Ruh Al Tarikh</h1>
+</header>
 
-  <!-- APP ROOT START -->
-  <div id="app-root">
-    <!-- LOADING STATE -->
-    <div id="loading-state" class="loading-state" style="display: none;">
-      <div class="spinner"></div>
-      <p>Loading premium content...</p>
+<div id="app-root">
+  <div id="loading-state" class="loading-state" style="display: none;">
+    <div class="spinner"></div>
+    <p>Loading premium content...</p>
+  </div>
+  
+  <div id="error-container" class="error-container" style="display: none;">
+    <p id="error-message"></p>
+    <button id="retry-btn">Retry</button>
+  </div>
+
+  <section class="hero">
+    <div class="hero-overlay">
+      <h1 id="hero-title">Loading...</h1>
+      <button id="hero-btn">▶ Watch Now</button>
     </div>
-    <!-- ERROR STATE -->
-    <div id="error-container" class="error-container" style="display: none;">
-      <p id="error-message"></p>
-      <button id="retry-btn" class="saas-btn saas-btn-primary">Retry</button>
-    </div>
+  </section>
 
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-overlay">
-        <h1 id="hero-title">Loading...</h1>
-        <button id="hero-btn">▶ Watch Now</button>
-      </div>
-    </section>
+  <h2 class="section" id="continue-section" style="display: none;">Continue Watching</h2>
+  <div id="continue-row" class="row" style="display: none;"></div>
 
-    <!-- ⭐ CONTINUE WATCHING -->
-    <h2 class="section" id="continue-section" style="display: none;">Continue Watching</h2>
-    <div id="continue-row" class="row" style="display: none;"></div>
+  <h2 class="section">Episodes</h2>
+  <div id="grid" class="grid"></div>
 
-    <!-- 📺 ALL EPISODES -->
-    <h2 class="section">Episodes</h2>
-    <div id="grid" class="grid"></div>
-
-    <!-- 🎥 HOVER PREVIEW -->
-
-    <!-- MODAL -->
-    <div id="modal" class="modal">
-      <div class="modal-box">
-        <span id="close" role="button" tabindex="0" aria-label="Close modal">×</span>
-        <iframe id="player" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        <h2 id="video-title"></h2>
-      </div>
+  <div id="modal" class="modal">
+    <div class="modal-box">
+      <span id="close">×</span>
+      <iframe id="player" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <h2 id="video-title"></h2>
     </div>
   </div>
-  <!-- APP ROOT END -->
-  <!-- SAAS LANDING START -->
-  <main class="saas-landing">
-    <!-- SECTION 1: HERO (PREMIUM) -->
-    <section class="saas-hero">
-      <div class="saas-container saas-hero-content">
-        <h1 class="saas-headline">All-in-One YouTube Growth Toolkit</h1>
-        <p class="saas-subheadline">Generate titles, tags, and content faster with powerful creator tools</p>
-        <div class="saas-cta-group">
-          <a href="#grid" class="saas-btn saas-btn-primary">Start Free</a>
-          <a href="#grid" class="saas-btn saas-btn-secondary">Explore Tools</a>
-        </div>
-      </div>
-      <div class="saas-hero-glow"></div>
-    </section>
+</div>
 
-    <!-- SECTION 2: FEATURE GRID -->
-    <section class="saas-features">
-      <div class="saas-container">
-        <div class="saas-grid">
-          <div class="saas-feature-card">
-            <div class="saas-feature-icon">⚡</div>
-            <h3 class="saas-feature-title">Fast Tool Generation</h3>
-            <p class="saas-feature-desc">Get results in seconds and speed up your workflow.</p>
-          </div>
-          <div class="saas-feature-card">
-            <div class="saas-feature-icon">🎯</div>
-            <h3 class="saas-feature-title">SEO Optimization</h3>
-            <p class="saas-feature-desc">Rank higher with data-driven titles and tags.</p>
-          </div>
-          <div class="saas-feature-card">
-            <div class="saas-feature-icon">🧠</div>
-            <h3 class="saas-feature-title">Smart Content Ideas</h3>
-            <p class="saas-feature-desc">Never run out of inspiration for your next video.</p>
-          </div>
-          <div class="saas-feature-card">
-            <div class="saas-feature-icon">💡</div>
-            <h3 class="saas-feature-title">100% Free Tools</h3>
-            <p class="saas-feature-desc">Powerful features at no cost to help you grow.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+<section class="social-links-section">
+  <div class="social-grid">
+    <a href="https://facebook.com/ruhdevops" target="_blank" class="social-card facebook">
+      <i class="fab fa-facebook-f social-icon"></i>
+      <h3>Facebook</h3>
+      <p>Follow for updates</p>
+    </a>
+    <a href="https://instagram.com/ruhdevops" target="_blank" class="social-card instagram">
+      <i class="fab fa-instagram social-icon"></i>
+      <h3>Instagram</h3>
+      <p>Behind the scenes</p>
+    </a>
+    <a href="https://threads.net/@ruhdevops" target="_blank" class="social-card threads">
+      <i class="fab fa-threads social-icon"></i>
+      <h3>Threads</h3>
+      <p>Real-time discussions</p>
+    </a>
+    <a href="https://youtube.com/@ruhdevops" target="_blank" class="social-card youtube">
+      <i class="fab fa-youtube social-icon"></i>
+      <h3>YouTube</h3>
+      <p>Subscribe for more</p>
+    </a>
+    <a href="#" target="_blank" class="social-card whatsapp">
+      <i class="fab fa-whatsapp social-icon"></i>
+      <h3>WhatsApp</h3>
+      <p>Join our channel</p>
+    </a>
+  </div>
+</section>
 
-    <!-- SECTION 3: VALUE / BENEFITS -->
-    <section class="saas-benefits">
-      <div class="saas-container">
-        <h2 class="saas-section-title">Why creators use this</h2>
-        <ul class="saas-benefits-list">
-          <li class="saas-benefit-item">
-            <span class="saas-check">✓</span>
-            <span>Save time</span>
-          </li>
-          <li class="saas-benefit-item">
-            <span class="saas-check">✓</span>
-            <span>Improve video performance</span>
-          </li>
-          <li class="saas-benefit-item">
-            <span class="saas-check">✓</span>
-            <span>Easy to use</span>
-          </li>
-        </ul>
-      </div>
-    </section>
+<footer class="footer">
+  <div class="footer-content">
+    <p>© 2026 Ruh Al Tarikh. All rights reserved.</p>
+    <p class="footer-tagline">Uncovering the truth (Haqq) through Islamic history</p>
+  </div>
+</footer>
 
-        <!-- SOCIAL LINKS SECTION -->
-    <section class="social-links-section">
-      <div class="saas-container">
-        <h2 class="saas-section-title">Connect With Us</h2>
-        <div class="social-grid">
-          <a href="https://facebook.com/azeezmohammedrizwan" target="_blank" class="social-card facebook" id="facebook-link">
-            <div class="social-icon">📘</div>
-            <h3>Facebook</h3>
-            <p>Follow for updates</p>
-          </a>
-          <a href="https://instagram.com/ruhdevops" target="_blank" class="social-card instagram" id="instagram-link">
-            <div class="social-icon">📷</div>
-            <h3>Instagram</h3>
-            <p>Behind the scenes</p>
-          </a>
-          <a href="https://threads.net/@ruhdevops" target="_blank" class="social-card threads" id="threads-link">
-            <div class="social-icon">🧵</div>
-            <h3>Threads</h3>
-            <p>Real-time discussions</p>
-          </a>
-          <a href="https://your-other-link.com" target="_blank" class="social-card custom" id="custom-link">
-            <div class="social-icon">🔗</div>
-            <h3>More Content</h3>
-            <p>Additional resources</p>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    
-    <section class="saas-bottom-cta">
-      <div class="saas-container">
-        <h2 class="saas-cta-title">Start growing your YouTube channel today</h2>
-        <a href="#grid" class="saas-btn saas-btn-primary">Use Tools Now</a>
-      </div>
-    </section>
-  </main>
-  <!-- SAAS LANDING END -->
-
-  <script src="js/app.js" defer></script>
+<script src="js/app.js" defer></script>
 </body>
 </html>
-
-
-
-
