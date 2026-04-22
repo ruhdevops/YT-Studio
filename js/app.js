@@ -110,10 +110,11 @@
       card.setAttribute("aria-label", `Play ${v.title}`);
       card.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openModal(v); } };
       card.innerHTML = `
-        <img src="${v.thumbnail}" loading="lazy" alt="${v.title}">
-        <div class="card-title">${v.title.substring(0, 80)}${v.title.length > 80 ? '...' : ''}</div>
-        <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
-    `;
+  <img src="${v.thumbnail}" loading="lazy" alt="${v.title}">
+  <div class="card-title">${v.title.substring(0, 80)}${v.title.length > 80 ? '...' : ''}</div>
+  <button class="watch-later-btn" data-id="${v.id}" data-title="${v.title.replace(/'/g, "\\'")}">⏱️ Later</button>
+  <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+`;
       card.onclick = () => openModal(v);
       fragment.appendChild(card);
     });
@@ -146,10 +147,11 @@
       card.setAttribute("aria-label", `Resume ${v.title}`);
       card.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openModal(v, item.time); } };
       card.innerHTML = `
-        <img src="${v.thumbnail}" loading="lazy" alt="${v.title}">
-        <div class="card-title">${v.title.substring(0, 80)}${v.title.length > 80 ? '...' : ''}</div>
-        <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
-    `;
+  <img src="${v.thumbnail}" loading="lazy" alt="${v.title}">
+  <div class="card-title">${v.title.substring(0, 80)}${v.title.length > 80 ? '...' : ''}</div>
+  <button class="watch-later-btn" data-id="${v.id}" data-title="${v.title.replace(/'/g, "\\'")}">⏱️ Later</button>
+  <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+`;
       card.onclick = () => openModal(v, item.time);
       fragment.appendChild(card);
     });
@@ -219,4 +221,6 @@
     init();
   });
 })();
+
+
 

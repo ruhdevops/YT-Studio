@@ -797,3 +797,95 @@ body.dark-mode .chip {
   color: var(--text-muted);
   grid-column: 1 / -1;
 }
+
+/* Watch Later Button */
+.watch-later-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.7);
+  border: none;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 4;
+  color: white;
+  transition: all 0.2s;
+}
+.watch-later-btn:hover {
+  background: var(--primary);
+  color: #000;
+}
+/* Badge in header */
+.watch-later-badge {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--primary);
+  color: #000;
+  border-radius: 30px;
+  padding: 5px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.watch-later-badge:hover {
+  transform: scale(1.05);
+}
+/* Watch Later Page */
+.watch-later-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.95);
+  z-index: 2000;
+  overflow-y: auto;
+  padding: 80px 40px;
+}
+.watch-later-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  position: sticky;
+  top: 0;
+  background: inherit;
+  padding-bottom: 10px;
+}
+.watch-later-header h2 {
+  font-size: 28px;
+}
+.watch-later-header button {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: white;
+  cursor: pointer;
+}
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: #000;
+  padding: 8px 20px;
+  border-radius: 40px;
+  font-size: 14px;
+  z-index: 3000;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1;
+}
+@media (max-width: 768px) {
+  .watch-later-page { padding: 60px 20px; }
+  .watch-later-badge { top: 12px; right: 12px; padding: 4px 10px; font-size: 12px; }
+}
