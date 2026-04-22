@@ -105,6 +105,10 @@
     videos.forEach(v => {
       const card = document.createElement("div");
       card.className = "card";
+      card.setAttribute("role", "button");
+      card.setAttribute("tabindex", "0");
+      card.setAttribute("aria-label", `Play ${v.title}`);
+      card.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openModal(v); } };
       card.innerHTML = `
         <img src="${v.thumbnail}" loading="lazy" alt="${v.title}">
         <div class="card-title">${v.title.substring(0, 80)}${v.title.length > 80 ? '...' : ''}</div>
@@ -137,6 +141,10 @@
       const v = videos.find(x => x.id === item.id);
       const card = document.createElement("div");
       card.className = "card";
+      card.setAttribute("role", "button");
+      card.setAttribute("tabindex", "0");
+      card.setAttribute("aria-label", `Resume ${v.title}`);
+      card.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openModal(v, item.time); } };
       card.innerHTML = `
         <img src="${v.thumbnail}" loading="lazy" alt="${v.title}">
         <div class="card-title">${v.title.substring(0, 80)}${v.title.length > 80 ? '...' : ''}</div>
@@ -209,20 +217,5 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     init();
-    setupHeroButton();
-});
+  });
 })();
-
-
-
-
-
-
-
-
-
-
-
-
-
-

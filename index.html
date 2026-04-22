@@ -50,10 +50,10 @@
   <div id="grid" class="grid"></div>
 
   <div id="modal" class="modal">
-    <div class="modal-box">
-      <span id="close">×</span>
+    <div class="modal-content">
+      <button id="close" class="close-btn" aria-label="Close modal">&times;</button>
       <iframe id="player" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></iframe>
-      <h2 id="video-title"></h2>
+      <h2 id="video-title" class="modal-title"></h2>
     </div>
   </div>
 </div>
@@ -65,7 +65,7 @@
   </div>
 
 </footer>
-<script src="js/app.js" defer></script>
+<script src="js/app.js" type="module" defer></script>
 <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">🌙</button>
 </body>
 </html>
