@@ -14,7 +14,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
-<body>
+
+<div class="search-filter-section">
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="🔍 Search episodes... (e.g., Dhul-Qarnayn, Dead Sea Scrolls)" autocomplete="off">
+    <button id="clearSearch" class="clear-search" style="display: none;">✖</button>
+  </div>
+  <div class="filter-chips">
+    <button class="chip active" data-cat="all">All</button>
+    <button class="chip" data-cat="history">📜 History</button>
+    <button class="chip" data-cat="quran">📖 Quran</button>
+    <button class="chip" data-cat="prophecy">🔮 Prophecy</button>
+    <button class="chip" data-cat="discussion">💬 Discussion</button>
+    <button class="chip" data-cat="educational">🎓 Educational</button>
+  </div>
+</div>
 <div id="bg"></div>
 
 <header class="header">
@@ -69,5 +83,6 @@
 <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">🌙</button>
 </body>
 </html>
+
 
 
