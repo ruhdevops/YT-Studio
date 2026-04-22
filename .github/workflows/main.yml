@@ -24,7 +24,7 @@ jobs:
     steps:
       # 📥 Checkout
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # ⚙️ Setup Node
       - name: Setup Node.js
@@ -68,7 +68,7 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -89,7 +89,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Deploy step
         run: echo "Add your deployment script here"
