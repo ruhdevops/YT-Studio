@@ -1,3 +1,15 @@
+
+/* Focus states for accessibility */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.card:focus-visible {
+  outline-offset: 2px;
+  transform: translateY(-6px);
+}
 /* ========== BASE VARIABLES ========== */
 :root {
   --bg-dark: #020617;
@@ -671,62 +683,3 @@ body.dark-mode .social-links-section {
   }
 }
 
-/* ========== MOBILE TOUCH OPTIMIZATIONS ========== */
-/* Smooth horizontal scrolling for rows */
-.row {
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  cursor: grab;
-}
-
-.row:active {
-  cursor: grabbing;
-}
-
-.row .card {
-  scroll-snap-align: start;
-}
-
-/* Increase tap target size for cards on mobile */
-.card {
-  cursor: pointer;
-  -webkit-tap-highlight-color: rgba(241, 196, 15, 0.2);
-}
-
-.card:active {
-  transform: scale(0.98);
-  transition: transform 0.05s;
-}
-
-/* Larger close button for mobile modal */
-.close-btn {
-  min-width: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Disable pull-to-refresh on modal to avoid conflict */
-.modal {
-  touch-action: pan-y pinch-zoom;
-}
-
-/* Improve touch feedback for buttons */
-#hero-btn, .dark-mode-toggle, .close-btn, .card {
-  touch-action: manipulation;
-}
-
-/* Responsive touch adjustments */
-@media (max-width: 768px) {
-  .card-title {
-    font-size: 12px;
-    padding: 10px 8px;
-  }
-  .row {
-    gap: 12px;
-    padding-bottom: 12px;
-  }
-}
