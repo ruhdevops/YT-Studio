@@ -981,3 +981,98 @@ body.dark-mode .chip {
   .watch-later-page { padding: 60px 20px; }
   .watch-later-badge { top: 12px; right: 12px; padding: 4px 10px; font-size: 12px; }
 }
+
+/* Dashboard Modal */
+.dashboard-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.95);
+  z-index: 10000;
+  overflow-y: auto;
+  padding: 40px 20px;
+}
+.dashboard-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: #111;
+  border-radius: 20px;
+  padding: 30px;
+  color: #fff;
+}
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 15px;
+}
+.close-dashboard {
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  color: #fff;
+}
+.close-dashboard:hover { color: var(--primary); }
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+.stat-card {
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+.stat-card h3 { font-size: 14px; color: #aaa; margin-bottom: 10px; }
+.stat-card p { font-size: 28px; font-weight: bold; color: var(--primary); }
+.dashboard-chart {
+  margin-bottom: 40px;
+}
+.dashboard-list ul {
+  list-style: none;
+  padding: 0;
+}
+.dashboard-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid #333;
+  display: flex;
+  justify-content: space-between;
+}
+.dashboard-list li span:first-child { font-weight: bold; }
+.dashboard-list li span:last-child { color: var(--primary); }
+/* Dark mode override for dashboard */
+body.dark-mode .dashboard-content {
+  background: #f5f5f5;
+  color: #000;
+}
+body.dark-mode .stat-card { background: #e0e0e0; }
+body.dark-mode .close-dashboard { color: #000; }
+@media (max-width: 768px) {
+  .dashboard-content { padding: 20px; }
+  .stat-card p { font-size: 22px; }
+}
+.dashboard-btn {
+  background: var(--primary);
+  border: none;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 16px;
+  transition: transform 0.2s;
+}
+.dashboard-btn:hover {
+  transform: scale(1.05);
+}
+@media (max-width: 768px) {
+  .dashboard-btn { padding: 4px 10px; font-size: 12px; }
+}
