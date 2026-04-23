@@ -34,3 +34,5 @@ dev.log
 vite.log
 worker.log
 pnpm-lock.yaml
+.vercel
+.env*.local
