@@ -34,7 +34,7 @@
   };
 
   /* DATA HELPERS */
-      async function fetchVideos() {
+        async function fetchVideos() {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
       try {
@@ -240,6 +240,7 @@
     init();
   });
 })();
+
 
 
 
