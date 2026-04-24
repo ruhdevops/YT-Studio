@@ -69,11 +69,11 @@ I create ideas that challenge perception and reshape thinking.
   </a>
 
   <a href="https://instagram.com/azeezmohammedrizwan">
-    <img src="https://img.shields.io/badge/Instagram-@azeezmohammedrizwan-E4405F?logo=instagram" />
+    <img src="https://img.shields.io/badge/Instagram-@mohammedrizwanazeez-E4405F?logo=instagram" />
   </a>
 
   <a href="https://threads.net/@ajm_rizwan">
-    <img src="https://img.shields.io/badge/Threads-@ajm__rizwan-black" />
+    <img src="https://img.shields.io/badge/Threads-@mohammedrizwanazeez-black" />
   </a>
 </p>
 
