@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ruh Al Tarikh</title>
+  <meta
+    name="description"
+    content="A cinematic archive for Ruh Al Tarikh episodes exploring Islamic history, scripture, prophecy, and deep discussion."
+  >
   <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://i.ytimg.com">
   <link rel="preconnect" href="https://www.youtube.com">
@@ -12,90 +16,240 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+<body>
+  <div id="bg" aria-hidden="true"></div>
 
-<div class="search-filter-section">
-  <div class="search-container">
-    <input type="text" id="searchInput" placeholder="🔍 Search episodes... (e.g., Dhul-Qarnayn, Dead Sea Scrolls)" autocomplete="off">
-    <button id="clearSearch" class="clear-search" style="display: none;">✖</button>
-  </div>
-  <div class="filter-chips">
-    <button class="chip active" data-cat="all">All</button>
-    <button class="chip" data-cat="history">📜 History</button>
-    <button class="chip" data-cat="quran">📖 Quran</button>
-    <button class="chip" data-cat="prophecy">🔮 Prophecy</button>
-    <button class="chip" data-cat="discussion">💬 Discussion</button>
-    <button class="chip" data-cat="educational">🎓 Educational</button>
-  </div>
-</div>
-<div id="bg"></div>
-
-<header class="header">
-  <div class="header-content">
-    <h1>🎬 RUH AL TARIKH</h1>
-    <p class="header-tagline">Uncovering the truth (Haqq) through Islamic history</p>
-  </div>
-<button id="dashboardBtn" class="dashboard-btn">📊 Dashboard</button>
-
-
-<div id="app-root">
-  <div id="loading-state" class="loading-state" style="display: none;">
-    <div class="spinner"></div>
-    <p>Loading premium content...</p>
-  </div>
-  
-  <div id="error-container" class="error-container" style="display: none;">
-    <p id="error-message"></p>
-    <button id="retry-btn">Retry</button>
-  </div>
-
-  <section class="hero">
-    <div class="hero-overlay">
-    <h1 id="hero-title">Loading...</h1>
-    <p class="hero-subtitle">Hidden Truth About Bible & Islam | Dead Sea Scrolls Revealed</p>
-      <button id="hero-btn">▶ Watch Now</button>
+  <header class="header">
+    <div class="header-content">
+      <div class="brand-block">
+        <p class="eyebrow">Cinematic archive</p>
+        <h1>Ruh Al Tarikh</h1>
+        <p class="header-tagline">Uncovering truth through Islamic history, scripture, and contested ideas.</p>
+      </div>
+      <div class="header-actions">
+        <button id="watchLaterBadge" class="pill-button accent" type="button" aria-label="Open watch later list">
+          <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
+          <span>Watch Later</span>
+          <strong id="watchLaterCount">0</strong>
+        </button>
+        <button id="dashboardBtn" class="pill-button" type="button" aria-label="Open viewing dashboard">
+          <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
+          <span>Dashboard</span>
+        </button>
+        <button id="darkModeToggle" class="icon-button" type="button" aria-label="Toggle theme">
+          <i class="fa-regular fa-moon" aria-hidden="true"></i>
+        </button>
+      </div>
     </div>
-  </section>
+  </header>
 
-  <h2 class="section" id="continue-section" style="display: none;">Continue Watching</h2>
-  <div id="continue-row" class="row" style="display: none;"></div>
+  <main id="app-root">
+    <section class="search-filter-section" aria-label="Browse controls">
+      <div class="search-panel">
+        <label class="search-label" for="searchInput">Search the archive</label>
+        <div class="search-container">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search episodes, topics, people, or places"
+            autocomplete="off"
+          >
+          <button id="clearSearch" class="clear-search" type="button" aria-label="Clear search">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <div class="filter-panel">
+        <p class="filter-heading">Themes</p>
+        <div class="filter-chips" role="tablist" aria-label="Episode categories">
+          <button class="chip active" type="button" data-cat="all">All</button>
+          <button class="chip" type="button" data-cat="history">History</button>
+          <button class="chip" type="button" data-cat="quran">Quran</button>
+          <button class="chip" type="button" data-cat="prophecy">Prophecy</button>
+          <button class="chip" type="button" data-cat="discussion">Discussion</button>
+          <button class="chip" type="button" data-cat="educational">Educational</button>
+        </div>
+      </div>
+    </section>
 
-  <h2 class="section">Episodes</h2>
-  <div id="grid" class="grid"></div>
+    <div id="loading-state" class="loading-state" style="display: none;">
+      <div class="spinner"></div>
+      <p>Loading premium content...</p>
+    </div>
 
-  <div id="modal" class="modal">
+    <div id="error-container" class="error-container" style="display: none;">
+      <p id="error-message"></p>
+      <button id="retry-btn" type="button">Retry</button>
+    </div>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-overlay">
+        <div class="hero-copy">
+          <p class="hero-kicker">Featured episode</p>
+          <h2 id="hero-title">Loading...</h2>
+          <p id="hero-subtitle" class="hero-subtitle">A curated spotlight from the latest archive.</p>
+          <div class="hero-meta">
+            <span id="hero-category" class="meta-chip">History</span>
+            <span id="hero-date" class="meta-chip">Recently added</span>
+          </div>
+          <div class="hero-actions">
+            <button id="hero-btn" class="primary-button" type="button">
+              <i class="fa-solid fa-play" aria-hidden="true"></i>
+              <span>Watch now</span>
+            </button>
+            <button id="hero-save-btn" class="secondary-button" type="button">
+              <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
+              <span>Save</span>
+            </button>
+          </div>
+        </div>
+        <aside class="hero-aside" aria-label="Archive highlights">
+          <div class="hero-stat">
+            <span class="stat-label">Episodes</span>
+            <strong id="stat-total">0</strong>
+          </div>
+          <div class="hero-stat">
+            <span class="stat-label">In progress</span>
+            <strong id="stat-progress">0</strong>
+          </div>
+          <div class="hero-stat">
+            <span class="stat-label">Saved</span>
+            <strong id="stat-saved">0</strong>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="highlights" aria-label="Quick highlights">
+      <article class="highlight-card">
+        <span class="highlight-label">Latest focus</span>
+        <h3 id="highlight-latest-title">Loading latest episode...</h3>
+        <p id="highlight-latest-copy">Fresh drops from the archive show up here first.</p>
+      </article>
+      <article class="highlight-card">
+        <span class="highlight-label">Current theme</span>
+        <h3 id="highlight-theme-title">History</h3>
+        <p id="highlight-theme-copy">The archive groups episodes by historical inquiry, scripture, and debate.</p>
+      </article>
+      <article class="highlight-card">
+        <span class="highlight-label">Viewing rhythm</span>
+        <h3 id="highlight-progress-title">No active sessions yet</h3>
+        <p id="highlight-progress-copy">Start an episode and your progress will be tracked here.</p>
+      </article>
+    </section>
+
+    <section id="continue-block" class="content-section" style="display: none;">
+      <div class="section-heading">
+        <h2 class="section-title">Continue Watching</h2>
+        <p class="section-copy">Jump back into unfinished episodes.</p>
+      </div>
+      <div id="continue-row" class="row"></div>
+    </section>
+
+    <section id="trending-block" class="content-section" style="display: none;">
+      <div class="section-heading">
+        <h2 class="section-title">Trending in the Archive</h2>
+        <p class="section-copy">A blend of recent drops and frequently resumed talks.</p>
+      </div>
+      <div id="trending-row" class="row"></div>
+    </section>
+
+    <section class="content-section">
+      <div class="section-heading">
+        <h2 class="section-title">Episodes</h2>
+        <p class="section-copy">Every upload, searchable and filterable in one place.</p>
+      </div>
+      <div id="results-meta" class="results-meta"></div>
+      <div id="grid" class="grid"></div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal" aria-hidden="true">
     <div class="modal-content">
-      <button id="close" class="close-btn" aria-label="Close modal">&times;</button>
-      <iframe id="player" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></iframe>
+      <button id="close" class="close-btn" type="button" aria-label="Close player">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+      <div class="video-container">
+        <iframe
+          id="player"
+          title="YouTube player"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
       <h2 id="video-title" class="modal-title"></h2>
     </div>
   </div>
-</div>
 
-<footer class="footer">
-  <div class="footer-content">
-    <p>© 2026 Ruh Al Tarikh. All rights reserved.</p>
-    <p class="footer-tagline">Uncovering the truth (Haqq) through Islamic history</p>
-  </div>
+  <section id="watchLaterPage" class="watch-later-page" style="display: none;" aria-hidden="true">
+    <div class="watch-later-shell">
+      <div class="watch-later-header">
+        <div>
+          <p class="overlay-kicker">Saved queue</p>
+          <h2>Watch Later</h2>
+        </div>
+        <button id="closeWatchLater" class="icon-button" type="button" aria-label="Close watch later">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div id="watchLaterContainer" class="overlay-grid"></div>
+    </div>
+  </section>
 
-</footer>
-<script src="js/app.js" type="module" defer></script>
-<button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">🌙</button>
-<div id="watchLaterPage" class="watch-later-page" style="display: none;">
-  <div class="watch-later-header">
-    <h2>⏱️ Watch Later</h2>
-    <button id="closeWatchLater">✖</button>
-  </div>
-  <div id="watchLaterContainer"></div>
-</div>
+  <section id="dashboardModal" class="dashboard-modal" style="display: none;" aria-hidden="true">
+    <div class="dashboard-content">
+      <div class="dashboard-header">
+        <div>
+          <p class="overlay-kicker">Viewer snapshot</p>
+          <h2>Archive Dashboard</h2>
+        </div>
+        <button id="closeDashboard" class="icon-button" type="button" aria-label="Close dashboard">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="dashboard-stats">
+        <article class="stat-card">
+          <h3>Episodes Loaded</h3>
+          <p id="dashboard-total">0</p>
+        </article>
+        <article class="stat-card">
+          <h3>Saved for Later</h3>
+          <p id="dashboard-saved">0</p>
+        </article>
+        <article class="stat-card">
+          <h3>Active Sessions</h3>
+          <p id="dashboard-progress">0</p>
+        </article>
+        <article class="stat-card">
+          <h3>Hours Estimated</h3>
+          <p id="dashboard-hours">0.0h</p>
+        </article>
+      </div>
+      <div class="dashboard-panels">
+        <section class="dashboard-panel">
+          <h3>Category Spread</h3>
+          <div id="dashboardCategories" class="dashboard-list"></div>
+        </section>
+        <section class="dashboard-panel">
+          <h3>Resume Queue</h3>
+          <div id="dashboardResumeList" class="dashboard-list"></div>
+        </section>
+      </div>
+    </div>
+  </section>
 
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>© 2026 Ruh Al Tarikh. All rights reserved.</p>
+      <p class="footer-tagline">Built for deep viewing, quick discovery, and cleaner continuity.</p>
+    </div>
+  </footer>
+
+  <script src="js/app.js" type="module" defer></script>
+</body>
 </html>
-
-
-
-
-
-
-
-
