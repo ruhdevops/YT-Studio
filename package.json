@@ -2,7 +2,8 @@
   "name": "yt-studio",
   "version": "1.0.0",
   "scripts": {
-    "build": "echo Static site - build complete"
+    "build": "echo Static site - build complete",
+    "test": "echo No tests specified && exit 0"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
