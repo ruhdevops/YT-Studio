@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS [Order] (
+  Id TEXT PRIMARY KEY,
+  CustomerName TEXT,
+  OrderDate INTEGER
+);

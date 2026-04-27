@@ -13,8 +13,8 @@
   "d1_databases": [
     {
       "binding": "MY_DB",
-      "database_name": "your-db-name",
-      "database_id": "your-db-id"
+      "database_name": "d1-machine-database",
+      "database_id": "e36d3eba-7401-4945-b8e8-26cdbd13e3a9"
     }
   ],
 
