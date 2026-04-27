@@ -2,6 +2,6 @@
   "name": "yt-studio",
   "version": "1.0.0",
   "scripts": {
-    "build": "echo 'Static site - build complete'"
+    "build": "echo "Static site - build complete""
   }
 }
