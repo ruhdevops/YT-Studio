@@ -2,12 +2,16 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ytstudio",
   "compatibility_date": "2026-04-25",
+
   "observability": {
     "enabled": true
   },
+
   "assets": {
+    "directory": "./public",
     "not_found_handling": "single-page-application"
   },
+
   "compatibility_flags": [
     "nodejs_compat"
   ]
