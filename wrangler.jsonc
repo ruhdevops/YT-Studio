@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ytstudio",
+  "name": "dev",
   "compatibility_date": "2026-04-25",
 
   "main": "src/worker.ts",
