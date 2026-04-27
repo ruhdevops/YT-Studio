@@ -66,12 +66,15 @@
           <input
             type="text"
             id="searchInput"
-            placeholder="Search episodes, topics, people, or places"
+            placeholder="Search episodes, topics, people, or places (/ to focus)"
             autocomplete="off"
+            aria-autocomplete="list"
+            aria-controls="searchSuggestions"
           >
           <button id="clearSearch" class="clear-search" type="button" aria-label="Clear search">
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
           </button>
+          <div id="searchSuggestions" class="search-suggestions" role="listbox" aria-hidden="true"></div>
         </div>
       </div>
       <div class="filter-panel">
@@ -169,6 +172,14 @@
       <div id="trending-row" class="row"></div>
     </section>
 
+    <section id="recommended-block" class="content-section" style="display: none;">
+      <div class="section-heading">
+        <h2 class="section-title">Recommended For You</h2>
+        <p class="section-copy">Episodes based on your viewing history.</p>
+      </div>
+      <div id="recommended-row" class="row"></div>
+    </section>
+
     <section class="content-section">
       <div class="section-heading">
         <h2 class="section-title">Episodes</h2>
@@ -176,6 +187,9 @@
       </div>
       <div id="results-meta" class="results-meta"></div>
       <div id="grid" class="grid"></div>
+      <div id="loadMoreContainer" style="display: none; text-align: center; padding: 30px 0;">
+        <button id="loadMoreBtn" class="primary-button" type="button">Load More Episodes</button>
+      </div>
     </section>
   </main>
 
@@ -184,13 +198,65 @@
       <button id="close" class="close-btn" type="button" aria-label="Close player">
         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
       </button>
-      <div class="video-container">
-        <iframe
-          id="player"
-          title="YouTube player"
-          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-          allowfullscreen
-        ></iframe>
+      <div class="modal-body">
+        <div class="video-container">
+          <iframe
+            id="player"
+            title="YouTube player"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <div class="video-sidebar">
+          <button id="toggleTranscript" class="sidebar-btn" type="button" aria-label="Toggle transcript panel" title="View episode notes">
+            <i class="fa-solid fa-note-sticky" aria-hidden="true"></i>
+          </button>
+          <button id="shareEpisode" class="sidebar-btn" type="button" aria-label="Share episode" title="Share this episode">
+            <i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div id="transcriptPanel" class="transcript-panel" aria-hidden="true">
+          <div class="transcript-header">
+            <h3>Episode Notes</h3>
+            <button id="closeTranscript" class="close-transcript" type="button" aria-label="Close transcript">
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div id="transcriptContent" class="transcript-content">
+            <p class="transcript-placeholder">Transcript & notes coming soon for this episode.</p>
+          </div>
+        </div>
+        <div id="sharePanel" class="share-panel" aria-hidden="true">
+          <div class="share-header">
+            <h3>Share Episode</h3>
+            <button id="closeShare" class="close-share" type="button" aria-label="Close share">
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="share-content">
+            <div class="share-link-block">
+              <label for="shareLink">Copy link</label>
+              <div class="copy-input-group">
+                <input type="text" id="shareLink" readonly>
+                <button id="copyLinkBtn" class="copy-btn" type="button" aria-label="Copy link">Copy</button>
+              </div>
+            </div>
+            <div class="share-social">
+              <p>Share on</p>
+              <div class="social-buttons">
+                <button id="shareTwitter" class="social-btn twitter" type="button" aria-label="Share on Twitter" title="Twitter">
+                  <i class="fa-brands fa-twitter" aria-hidden="true"></i>
+                </button>
+                <button id="shareFacebook" class="social-btn facebook" type="button" aria-label="Share on Facebook" title="Facebook">
+                  <i class="fa-brands fa-facebook" aria-hidden="true"></i>
+                </button>
+                <button id="shareWhatsApp" class="social-btn whatsapp" type="button" aria-label="Share on WhatsApp" title="WhatsApp">
+                  <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <h2 id="video-title" class="modal-title"></h2>
     </div>
@@ -255,6 +321,20 @@
 
   <div id="toast" class="toast" aria-live="polite"></div>
 
+  <div id="keyboardHints" class="keyboard-hints" aria-hidden="true">
+    <div class="hints-content">
+      <h3>Keyboard Shortcuts</h3>
+      <ul>
+        <li><kbd>/</kbd> Focus search</li>
+        <li><kbd>J</kbd> Previous episode</li>
+        <li><kbd>K</kbd> Next episode</li>
+        <li><kbd>Esc</kbd> Close modals</li>
+        <li><kbd>↑↓←→</kbd> Navigate grid</li>
+      </ul>
+      <button id="closeHints" type="button">Got it</button>
+    </div>
+  </div>
+
   <footer class="footer">
     <div class="footer-content">
       <p>© 2026 Ruh Al Tarikh. All rights reserved.</p>
@@ -272,4 +352,3 @@
   <!-- End Cloudflare Web Analytics -->
 </body>
 </html>
-

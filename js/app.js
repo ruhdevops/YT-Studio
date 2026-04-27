@@ -8,7 +8,9 @@
   const LAST_PLAYED_KEY = 'last_played_video';
   const WATCH_LATER_KEY = 'watch_later';
   const THEME_KEY = 'ui_theme';
+  const SEARCH_HISTORY_KEY = 'search_history';
   const ASSUMED_VIDEO_DURATION = 600;
+  const ITEMS_PER_PAGE = 12;
 
   const CATEGORY_RULES = [
     { key: 'quran', label: 'Quran', terms: ['quran', 'qur', 'surah', 'ayah', 'allah', 'tafsir', 'islam'] },
@@ -38,6 +40,7 @@
     progressTitle: document.getElementById('highlight-progress-title'),
     progressCopy: document.getElementById('highlight-progress-copy'),
     searchInput: document.getElementById('searchInput'),
+    searchSuggestions: document.getElementById('searchSuggestions'),
     clearSearch: document.getElementById('clearSearch'),
     chips: Array.from(document.querySelectorAll('.chip')),
     resultsMeta: document.getElementById('results-meta'),
@@ -46,6 +49,8 @@
     continueRow: document.getElementById('continue-row'),
     trendingBlock: document.getElementById('trending-block'),
     trendingRow: document.getElementById('trending-row'),
+    recommendedBlock: document.getElementById('recommended-block'),
+    recommendedRow: document.getElementById('recommended-row'),
     modal: document.getElementById('modal'),
     player: document.getElementById('player'),
     videoTitle: document.getElementById('video-title'),
@@ -69,7 +74,22 @@
     dashboardCategories: document.getElementById('dashboardCategories'),
     dashboardResumeList: document.getElementById('dashboardResumeList'),
     darkModeToggle: document.getElementById('darkModeToggle'),
-    toast: document.getElementById('toast')
+    toast: document.getElementById('toast'),
+    toggleTranscript: document.getElementById('toggleTranscript'),
+    shareEpisode: document.getElementById('shareEpisode'),
+    transcriptPanel: document.getElementById('transcriptPanel'),
+    sharePanel: document.getElementById('sharePanel'),
+    closeTranscript: document.getElementById('closeTranscript'),
+    closeShare: document.getElementById('closeShare'),
+    copyLinkBtn: document.getElementById('copyLinkBtn'),
+    shareLink: document.getElementById('shareLink'),
+    shareTwitter: document.getElementById('shareTwitter'),
+    shareFacebook: document.getElementById('shareFacebook'),
+    shareWhatsApp: document.getElementById('shareWhatsApp'),
+    loadMoreBtn: document.getElementById('loadMoreBtn'),
+    loadMoreContainer: document.getElementById('loadMoreContainer'),
+    keyboardHints: document.getElementById('keyboardHints'),
+    closeHints: document.getElementById('closeHints')
   };
 
   const state = {
@@ -80,7 +100,10 @@
     progressInterval: null,
     activeCategory: 'all',
     searchTerm: '',
-    theme: 'dark'
+    theme: 'dark',
+    paginationIndex: 0,
+    lastSearchTerm: '',
+    showedHints: localStorage.getItem('keyboard_hints_shown') || false
   };
 
   function sanitizeText(value) {
@@ -239,6 +262,27 @@
     }
   }
 
+  function addToSearchHistory(term) {
+    if (!term.trim()) return;
+    try {
+      let history = JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || '[]');
+      history = history.filter(h => h.toLowerCase() !== term.toLowerCase());
+      history.unshift(term);
+      history = history.slice(0, 10);
+      localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+    } catch (error) {
+      // Silent fail
+    }
+  }
+
+  function getSearchHistory() {
+    try {
+      return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || '[]');
+    } catch (error) {
+      return [];
+    }
+  }
+
   function showLoading() {
     if (elements.loadingState) {
       elements.loadingState.style.display = 'flex';
@@ -279,6 +323,44 @@
     }, 2200);
   }
 
+  function renderSearchSuggestions(term) {
+    if (!term.trim()) {
+      const history = getSearchHistory();
+      if (history.length === 0) {
+        elements.searchSuggestions.innerHTML = '';
+        elements.searchSuggestions.setAttribute('aria-hidden', 'true');
+        return;
+      }
+
+      elements.searchSuggestions.innerHTML = history
+        .map((h, i) => `<div class="suggestion-item" role="option" data-index="${i}"><i class="fa-solid fa-clock" aria-hidden="true"></i>${sanitizeText(h)}</div>`)
+        .join('');
+      elements.searchSuggestions.setAttribute('aria-hidden', 'false');
+      return;
+    }
+
+    const lower = term.toLowerCase();
+    const matches = state.videos
+      .filter(v => v.title.toLowerCase().includes(lower) || v.category.toLowerCase().includes(lower))
+      .slice(0, 8)
+      .map(v => ({
+        title: v.title,
+        category: getCategoryLabel(v.category),
+        id: v.id
+      }));
+
+    if (matches.length === 0) {
+      elements.searchSuggestions.innerHTML = '<div class="no-suggestions">No episodes match this search</div>';
+      elements.searchSuggestions.setAttribute('aria-hidden', 'false');
+      return;
+    }
+
+    elements.searchSuggestions.innerHTML = matches
+      .map((m, i) => `<div class="suggestion-item" role="option" data-id="${sanitizeText(m.id)}" data-index="${i}"><div><strong>${sanitizeText(m.title)}</strong><span class="suggestion-cat">${sanitizeText(m.category)}</span></div></div>`)
+      .join('');
+    elements.searchSuggestions.setAttribute('aria-hidden', 'false');
+  }
+
   function getFilteredVideos() {
     const search = state.searchTerm.trim().toLowerCase();
 
@@ -299,6 +381,33 @@
         return new Date(b.publishedAt).getTime() + progressScoreB * 1000 - (new Date(a.publishedAt).getTime() + progressScoreA * 1000);
       })
       .slice(0, 8);
+  }
+
+  function getRecommendedVideos() {
+    const progress = getProgress();
+    const watchedCategories = {};
+
+    state.videos.forEach(video => {
+      if (progress[video.id]) {
+        watchedCategories[video.category] = (watchedCategories[video.category] || 0) + 1;
+      }
+    });
+
+    const topCategories = Object.entries(watchedCategories)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(entry => entry[0]);
+
+    if (topCategories.length === 0) {
+      return state.videos.slice(0, 8);
+    }
+
+    const recommended = state.videos
+      .filter(v => topCategories.includes(v.category) && !progress[v.id])
+      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+      .slice(0, 8);
+
+    return recommended.length > 0 ? recommended : state.videos.slice(0, 8);
   }
 
   function createCardMarkup(video, options = {}) {
@@ -335,16 +444,36 @@
     }
 
     state.filteredVideos = getFilteredVideos();
+    state.paginationIndex = 0;
     const total = state.filteredVideos.length;
     const label = state.activeCategory === 'all' ? 'All themes' : getCategoryLabel(state.activeCategory);
     elements.resultsMeta.textContent = `${total} episode${total === 1 ? '' : 's'} • ${label}${state.searchTerm ? ` • Search: "${state.searchTerm.trim()}"` : ''}`;
 
     if (!total) {
       elements.grid.innerHTML = '<div class="no-results">No episodes matched this search. Try a broader phrase or switch theme.</div>';
+      elements.loadMoreContainer.style.display = 'none';
       return;
     }
 
-    elements.grid.innerHTML = state.filteredVideos.map((video) => createCardMarkup(video)).join('');
+    const paginated = state.filteredVideos.slice(0, ITEMS_PER_PAGE);
+    elements.grid.innerHTML = paginated.map((video) => createCardMarkup(video)).join('');
+
+    if (total > ITEMS_PER_PAGE) {
+      elements.loadMoreContainer.style.display = 'block';
+    } else {
+      elements.loadMoreContainer.style.display = 'none';
+    }
+  }
+
+  function loadMoreVideos() {
+    state.paginationIndex += ITEMS_PER_PAGE;
+    const nextItems = state.filteredVideos.slice(state.paginationIndex, state.paginationIndex + ITEMS_PER_PAGE);
+    const markup = nextItems.map(video => createCardMarkup(video)).join('');
+    elements.grid.insertAdjacentHTML('beforeend', markup);
+
+    if (state.paginationIndex + ITEMS_PER_PAGE >= state.filteredVideos.length) {
+      elements.loadMoreContainer.style.display = 'none';
+    }
   }
 
   function renderContinue() {
@@ -388,6 +517,23 @@
     elements.trendingBlock.style.display = 'block';
     elements.trendingRow.innerHTML = trending
       .map((video, index) => createCardMarkup(video, { badge: index < 3 ? 'Trending' : 'Fresh pick' }))
+      .join('');
+  }
+
+  function renderRecommended() {
+    if (!elements.recommendedBlock || !elements.recommendedRow) {
+      return;
+    }
+
+    const recommended = getRecommendedVideos();
+    if (!recommended.length) {
+      elements.recommendedBlock.style.display = 'none';
+      return;
+    }
+
+    elements.recommendedBlock.style.display = 'block';
+    elements.recommendedRow.innerHTML = recommended
+      .map((video) => createCardMarkup(video, { badge: 'For You' }))
       .join('');
   }
 
@@ -530,6 +676,7 @@
     elements.modal.style.display = 'flex';
     elements.modal.setAttribute('aria-hidden', 'false');
     elements.videoTitle.textContent = video.title;
+    elements.shareLink.value = `${window.location.origin}?video=${video.id}`;
     elements.player.src = `https://www.youtube.com/embed/${video.id}?autoplay=1&start=${start}`;
 
     if (state.progressInterval) {
@@ -558,6 +705,8 @@
       window.clearInterval(state.progressInterval);
       state.progressInterval = null;
     }
+    elements.transcriptPanel.setAttribute('aria-hidden', 'true');
+    elements.sharePanel.setAttribute('aria-hidden', 'true');
     renderContinue();
     renderDashboard();
     renderHighlights();
@@ -593,6 +742,7 @@
       renderGrid();
       renderContinue();
       renderTrending();
+      renderRecommended();
       return;
     }
 
@@ -613,6 +763,14 @@
     });
   }
 
+  function showKeyboardHints() {
+    if (!state.showedHints) {
+      elements.keyboardHints.setAttribute('aria-hidden', 'false');
+      state.showedHints = true;
+      localStorage.setItem('keyboard_hints_shown', 'true');
+    }
+  }
+
   function bindEvents() {
     elements.heroBtn?.addEventListener('click', () => openModal(state.heroVideo, getProgress()[state.heroVideo?.id]?.time || 0));
     elements.heroSaveBtn?.addEventListener('click', () => {
@@ -631,18 +789,91 @@
     elements.closeWatchLater?.addEventListener('click', () => toggleOverlay(elements.watchLaterPage, false));
     elements.dashboardBtn?.addEventListener('click', () => toggleOverlay(elements.dashboardModal, true));
     elements.closeDashboard?.addEventListener('click', () => toggleOverlay(elements.dashboardModal, false));
+    elements.loadMoreBtn?.addEventListener('click', loadMoreVideos);
+
+    elements.toggleTranscript?.addEventListener('click', () => {
+      const isOpen = elements.transcriptPanel.getAttribute('aria-hidden') === 'false';
+      elements.transcriptPanel.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+    });
+
+    elements.closeTranscript?.addEventListener('click', () => {
+      elements.transcriptPanel.setAttribute('aria-hidden', 'true');
+    });
+
+    elements.shareEpisode?.addEventListener('click', () => {
+      const isOpen = elements.sharePanel.getAttribute('aria-hidden') === 'false';
+      elements.sharePanel.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+    });
+
+    elements.closeShare?.addEventListener('click', () => {
+      elements.sharePanel.setAttribute('aria-hidden', 'true');
+    });
+
+    elements.copyLinkBtn?.addEventListener('click', () => {
+      elements.shareLink.select();
+      document.execCommand('copy');
+      showToast('Link copied to clipboard!');
+    });
+
+    elements.shareTwitter?.addEventListener('click', () => {
+      const url = elements.shareLink.value;
+      const title = elements.videoTitle.textContent;
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank', 'width=550,height=420');
+    });
+
+    elements.shareFacebook?.addEventListener('click', () => {
+      const url = elements.shareLink.value;
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=550,height=420');
+    });
+
+    elements.shareWhatsApp?.addEventListener('click', () => {
+      const url = elements.shareLink.value;
+      const title = elements.videoTitle.textContent;
+      window.open(`https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`, '_blank');
+    });
+
+    elements.closeHints?.addEventListener('click', () => {
+      elements.keyboardHints.setAttribute('aria-hidden', 'true');
+    });
 
     elements.searchInput?.addEventListener('input', (event) => {
       state.searchTerm = event.target.value || '';
       elements.clearSearch.style.display = state.searchTerm ? 'inline-flex' : 'none';
+      renderSearchSuggestions(state.searchTerm);
       renderGrid();
       renderHighlights();
+    });
+
+    elements.searchInput?.addEventListener('focus', (event) => {
+      renderSearchSuggestions(event.target.value);
+    });
+
+    elements.searchSuggestions?.addEventListener('click', (event) => {
+      const item = event.target.closest('.suggestion-item');
+      if (item) {
+        const id = item.getAttribute('data-id');
+        const textContent = item.textContent.trim();
+        if (id) {
+          const video = state.videos.find(v => v.id === id);
+          if (video) openModal(video);
+        } else {
+          elements.searchInput.value = textContent;
+          state.searchTerm = textContent;
+          addToSearchHistory(textContent);
+          renderGrid();
+          renderHighlights();
+          elements.searchSuggestions.innerHTML = '';
+          elements.searchSuggestions.setAttribute('aria-hidden', 'true');
+        }
+      }
     });
 
     elements.clearSearch?.addEventListener('click', () => {
       state.searchTerm = '';
       elements.searchInput.value = '';
       elements.clearSearch.style.display = 'none';
+      elements.searchSuggestions.innerHTML = '';
+      elements.searchSuggestions.setAttribute('aria-hidden', 'true');
       renderGrid();
       renderHighlights();
     });
@@ -675,6 +906,29 @@
         closeModal();
         toggleOverlay(elements.watchLaterPage, false);
         toggleOverlay(elements.dashboardModal, false);
+        elements.transcriptPanel.setAttribute('aria-hidden', 'true');
+        elements.sharePanel.setAttribute('aria-hidden', 'true');
+      }
+
+      if (event.key === '/') {
+        event.preventDefault();
+        elements.searchInput.focus();
+      }
+
+      if (event.key === 'j') {
+        const idx = state.filteredVideos.findIndex(v => v.id === state.currentVideo?.id);
+        if (idx > 0) {
+          const video = state.filteredVideos[idx - 1];
+          openModal(video);
+        }
+      }
+
+      if (event.key === 'k') {
+        const idx = state.filteredVideos.findIndex(v => v.id === state.currentVideo?.id);
+        if (idx >= 0 && idx < state.filteredVideos.length - 1) {
+          const video = state.filteredVideos[idx + 1];
+          openModal(video);
+        }
       }
 
       if ((event.key === 'Enter' || event.key === ' ') && event.target.classList.contains('card')) {
@@ -695,10 +949,12 @@
       renderGrid();
       renderContinue();
       renderTrending();
+      renderRecommended();
       renderWatchLater();
       updateWatchLaterCount();
       renderDashboard();
       renderHighlights();
+      showKeyboardHints();
     } catch (error) {
       showError('Failed to load content. Please try again.');
     } finally {
