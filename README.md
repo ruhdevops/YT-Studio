@@ -1,114 +1,159 @@
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/ruhdevops/YT-Studio/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/ruhdevops/YT-Studio/tree/main)
+# Ruh Al Tarikh - YT Studio Archive
 
+A cinematic archive for **Ruh Al Tarikh** episodes exploring Islamic history, scripture, prophecy, and deep discussion.
 
-<!-- 🌌 HERO (Snake Animation) -->
-<p align="center">
-  <img src="https://raw.githubusercontent.com/platane/platane/output/github-contribution-grid-snake-dark.svg" width="100%" />
-</p>
+## Features
 
-<!-- 🎬 YOUR CUSTOM BANNER GIF -->
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/09ba48bf-4520-4fec-8932-68d73c578005" width="100%" />
-</p>
+- **7 UX Enhancements**
+  - Search autocomplete with suggestions & history
+  - Keyboard shortcuts (J/K//, arrow navigation)
+  - Infinite scroll + pagination (12 items per page)
+  - Episode notes/transcript panel
+  - Enhanced mobile responsiveness
+  - Recommended episodes (based on viewing history)
+  - Social sharing & copyable links (Twitter, Facebook, WhatsApp)
 
-<!-- ✨ TYPING HEADER -->
-<p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=26&pause=900&color=7F77DD&center=true&vCenter=true&width=800&lines=🎬+Provocateur+Thinker;🧠+Concept+Driven+Creator;🌍+YouTube+Documentary+Storyteller;⚡+Building+Ideas+That+Challenge+Reality" />
-</p>
+- **Core Features**
+  - Video grid with lazy-loaded images
+  - Continue Watching section
+  - Trending episodes
+  - Dark/light mode toggle
+  - Watch Later queue (localStorage)
+  - Progress tracking & dashboard
+  - Search & category filtering
 
----
+## Tech Stack
 
-# 🧠 ABOUT ME
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3
+- **Build**: Vite (configured)
+- **Server**: Nginx (Docker)
+- **Deployment**: Google Cloud Run / Container Registry
+- **Analytics**: Vercel Speed Insights + Cloudflare Web Analytics
+- **Backend API**: Cloudflare Workers
 
-## ⚡ The Provocateur Thinker
+## Quick Start
 
-<p align="center">
-I don’t create content for attention.<br>
-I create ideas that challenge perception and reshape thinking.
-</p>
+### Local Development
+```bash
+npm install
+npm run dev
+# Visit http://localhost:5173
+```
 
-- 🧩 Concept-first creator  
-- 🎬 Documentary-style storyteller  
-- 🧠 Deep thinker  
-- ⚡ Norm challenger  
+### Docker Build & Run
+```bash
+docker build -t yt-studio:latest .
+docker run -p 8080:80 yt-studio:latest
+# Visit http://localhost:8080
+```
 
----
+### Docker Compose
+```bash
+docker-compose up
+# Visit http://localhost:8080
+```
 
-# 📊 CREATIVE DNA
+## Deployment
 
-<p align="center">
-<img src="https://img.shields.io/badge/Idea%20Depth-92%25-7F77DD" />
-<img src="https://img.shields.io/badge/Emotional%20Edge-75%25-D85A30" />
-<img src="https://img.shields.io/badge/Entertainment-60%25-1D9E75" />
-<img src="https://img.shields.io/badge/Aesthetic-44%25-BA7517" />
-</p>
+### Google Cloud Run
+```bash
+gcloud auth login
+gcloud auth configure-docker
+docker tag yt-studio:latest gcr.io/yt-studio-493116/yt-studio:latest
+docker push gcr.io/yt-studio-493116/yt-studio:latest
+gcloud run deploy yt-studio --image gcr.io/yt-studio-493116/yt-studio:latest --platform managed --region us-central1 --allow-unauthenticated
+```
 
----
+### GitHub Actions
+Automated builds on push to `main` or `develop` branches:
+- Builds Docker image
+- Pushes to GCR
+- Deploys to Cloud Run (main branch only)
 
-# 💪 CORE STRENGTHS
+See `.github/workflows/deploy-gcr.yml`
 
-- 🧠 Intellectual clarity  
-- 🎯 Distinctive POV  
-- 💥 Debate magnet  
-- 🤝 Loyal audience  
+### Vercel
+```bash
+vercel deploy
+```
 
----
+## Configuration
 
-# 🚀 CONTENT ECOSYSTEM
+### Environment Variables
+- `VITE_API_URL`: Backend API endpoint (default: `http://127.0.0.1:8787`)
 
-<p align="center">
-<img src="https://img.shields.io/badge/YouTube-Documentary-red?logo=youtube" />
-<img src="https://img.shields.io/badge/Shorts-Insights-orange" />
-<img src="https://img.shields.io/badge/Islamic%20Content-Deep%20Thought-0B8F6A" />
-</p>
+Create `.env`:
+```
+VITE_API_URL=https://yt-studio-api.example.com
+```
 
----
+## Project Structure
+```
+├── index.html          # Main SPA entry point
+├── js/
+│   └── app.js         # Core application logic
+├── css/
+│   └── style.css      # Design system & responsive styles
+├── src/
+│   └── api.js         # API client
+├── Dockerfile         # Production multi-stage build
+├── docker-compose.yml # Local compose setup
+├── package.json       # Dependencies
+└── .github/workflows/ # CI/CD pipelines
+```
 
-# 🌐 CONNECT WITH ME
+## Performance
 
-<p align="center">
-  <a href="https://facebook.com/azeezmohammedrizwan">
-    <img src="https://img.shields.io/badge/Facebook-Azeez%20Mohammed%20Rizwan-1877F2?logo=facebook" />
-  </a>
+- **Image lazy loading**: Intersection Observer API
+- **Asset caching**: 1-year expires for static files
+- **Gzip compression**: Enabled in Nginx
+- **SPA routing**: All routes → `/index.html`
+- **Pagination**: Load 12 episodes per page
+- **Search history**: Stored in localStorage
 
-  <a href="https://instagram.com/azeezmohammedrizwan">
-    <img src="https://img.shields.io/badge/Instagram-@mohammedrizwanazeez-E4405F?logo=instagram" />
-  </a>
+## API Integration
 
-  <a href="https://threads.net/@ajm_rizwan">
-    <img src="https://img.shields.io/badge/Threads-@mohammedrizwanazeez-black" />
-  </a>
-</p>
+Episodes fetched from:
+```
+https://yt-studio-api.ruhdevopsytstudio.workers.dev
+```
 
----
+Response format:
+```json
+{
+  "videos": [
+    {
+      "id": "video-id",
+      "title": "Episode title",
+      "thumbnail": "https://i.ytimg.com/...",
+      "publishedAt": "2024-01-01T00:00:00Z",
+      "channel": "Ruh Al Tarikh"
+    }
+  ]
+}
+```
 
-# 🎬 FEATURED VIDEO
+## Keyboard Shortcuts
 
-<p align="center">
-  <a href="https://github.com/user-attachments/assets/574e17da-d44c-489c-908c-efbcccb1795f">
-    <img src="https://img.shields.io/badge/▶%20Watch%20Video-Click%20Here-7F77DD?style=for-the-badge" />
-  </a>
-</p>
+| Key | Action |
+|-----|--------|
+| `/` | Focus search |
+| `J` | Previous episode |
+| `K` | Next episode |
+| `Esc` | Close modals |
+| `↑↓←→` | Navigate grid |
 
----
+## Browser Support
 
-# 🌌 CREATIVE FLOW
+- Chrome/Edge 90+
+- Firefox 88+
+- Safari 14+
+- Mobile browsers
 
-<p align="center">
-  <img width="480" height="270" alt="Youtube Logo GIF" src="https://github.com/user-attachments/assets/848b31fb-e91c-43a3-942d-8f3325652e3c" />
-</p>
+## License
 
-<p align="center">
-⚡ Idea → Conflict → Depth → Transformation → Impact
-</p>
+MIT
 
----
+## Author
 
-# ⚡ FINAL STATEMENT
-
-<p align="center">
-<b>
-I don’t follow trends.<br>
-I build ideas that outlive them.
-</b>
-</p>
+Azeez Mohammed Rizwan
