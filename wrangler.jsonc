@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "dev",
+  "name": "ytstudio",
   "compatibility_date": "2026-04-25",
   "observability": {
     "enabled": true
