@@ -3,14 +3,19 @@
   "name": "ytstudio",
   "compatibility_date": "2026-04-25",
 
-  "observability": {
-    "enabled": true
-  },
-
   "assets": {
     "directory": "./public",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
+
+  "d1_databases": [
+    {
+      "binding": "MY_DB",
+      "database_name": "your-db-name",
+      "database_id": "your-db-id"
+    }
+  ],
 
   "compatibility_flags": [
     "nodejs_compat"
