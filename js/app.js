@@ -100,6 +100,20 @@ const DOM = {
     themeMenu: document.getElementById('themeMenu'),
     episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
     episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
     menuToggle: document.getElementById('menuToggleBtn'),
     scrollToTop: document.getElementById('scrollToTop'),
 
@@ -434,7 +448,8 @@ function renderCard(video, index = 0) {
                 ${s?`<div class="progress-bar-container"><div class="progress-bar-fill" style="width:${s.percent}%"></div></div>`:""}
                 <button class="watch-later-btn ${a?"active":""}" 
                         data-id="${t.id}" 
-                        aria-label="${a?"Remove from Watch Later":"Save for later"}">
+                        aria-label="${a?"Remove from Watch Later":"Save for later"}"
+                        title="${a?"Remove from Watch Later":"Save for later"}">
                     <i class="fa-${a?"solid":"regular"} fa-bookmark"></i>
                 </button>
             </div>
@@ -1027,6 +1042,83 @@ function bindEvents() {
         });
     }
 
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
     if (DOM.heroBtn) DOM.heroBtn.addEventListener('click', () => AppState.hero && openVideo(AppState.hero));
     if (DOM.heroSave) DOM.heroSave.addEventListener('click', () => AppState.hero && toggleWatchLater(AppState.hero));
 
@@ -1235,6 +1327,19 @@ function bindEvents() {
         // Theme toggle
         if (key === 't') {
             toggleTheme();
+        }
+
+        // Watch Later toggle
+        if (key === 'b') {
+            if (AppState.current) {
+                toggleWatchLater(AppState.current);
+            } else if (DOM.watchLaterPage) {
+                if (DOM.watchLaterPage.style.display === 'block') {
+                    closeWatchLater();
+                } else {
+                    openWatchLater();
+                }
+            }
         }
     });
 
