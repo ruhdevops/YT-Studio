@@ -525,7 +525,7 @@ function openVideo(video) {
         if (icon) {
             icon.className = isSaved ? 'fas fa-bookmark' : 'far fa-bookmark';
         }
-        DOM.modalSaveBtn.setAttribute('aria-label', isSaved ? 'Remove from Watch Later' : 'Save for later');
+        DOM.modalSaveBtn.setAttribute('aria-label', isSaved ? 'Remove from Watch Later (B)' : 'Save for later (B)');
     }
 }
 
@@ -585,7 +585,7 @@ function toggleWatchLater(video) {
         if (icon) {
             icon.className = isSaved ? 'fas fa-bookmark' : 'far fa-bookmark';
         }
-        DOM.modalSaveBtn.setAttribute('aria-label', isSaved ? 'Remove from Watch Later' : 'Save for later');
+        DOM.modalSaveBtn.setAttribute('aria-label', isSaved ? 'Remove from Watch Later (B)' : 'Save for later (B)');
     }
 }
 
@@ -1236,6 +1236,17 @@ function bindEvents() {
         // Theme toggle
         if (key === 't') {
             toggleTheme();
+        }
+
+        // Watch Later toggle
+        if (key === 'b') {
+            if (AppState.current) {
+                toggleWatchLater(AppState.current);
+            } else if (DOM.watchLaterPage) {
+                const isVisible = window.getComputedStyle(DOM.watchLaterPage).display !== 'none';
+                if (isVisible) closeWatchLater();
+                else openWatchLater();
+            }
         }
     });
 
