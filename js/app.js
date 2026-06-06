@@ -435,7 +435,8 @@ function renderCard(video, index = 0) {
                 ${s?`<div class="progress-bar-container"><div class="progress-bar-fill" style="width:${s.percent}%"></div></div>`:""}
                 <button class="watch-later-btn ${a?"active":""}" 
                         data-id="${t.id}" 
-                        aria-label="${a?"Remove from Watch Later":"Save for later"}">
+                        aria-label="${a?"Remove from Watch Later":"Save for later"}"
+                        title="${a?"Remove from Watch Later":"Save for later"}">
                     <i class="fa-${a?"solid":"regular"} fa-bookmark"></i>
                 </button>
             </div>
@@ -460,7 +461,7 @@ function renderCard(video, index = 0) {
                 <div class="card" data-id="${e.id}" data-wl="1" role="button" tabindex="0" aria-label="Watch ${Utils.sanitize(e.title)}">
                     <div class="card-thumb-wrapper">
                         <img data-src="${t}" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="" class="lazy-img" loading="lazy">
-                        <button class="watch-later-btn active" data-id="${e.id}" aria-label="Remove ${Utils.sanitize(e.title)} from Watch Later">
+                        <button class="watch-later-btn active" data-id="${e.id}" aria-label="Remove ${Utils.sanitize(e.title)} from Watch Later" title="Remove ${Utils.sanitize(e.title)} from Watch Later">
                             <i class="fa-solid fa-bookmark" aria-hidden="true"></i>
                         </button>
                     </div>
@@ -1236,6 +1237,19 @@ function bindEvents() {
         // Theme toggle
         if (key === 't') {
             toggleTheme();
+        }
+
+        // Watch Later toggle
+        if (key === 'b') {
+            if (AppState.current) {
+                toggleWatchLater(AppState.current);
+            } else if (DOM.watchLaterPage) {
+                if (DOM.watchLaterPage.style.display === 'block') {
+                    closeWatchLater();
+                } else {
+                    openWatchLater();
+                }
+            }
         }
     });
 
