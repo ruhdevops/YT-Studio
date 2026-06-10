@@ -1230,6 +1230,9 @@ function bindEvents() {
             } else if (key === 'k') {
                 e.preventDefault();
                 navigateVideo(1);
+            } else if (key === 'b') {
+                e.preventDefault();
+                toggleWatchLater(AppState.current);
             }
         }
 
