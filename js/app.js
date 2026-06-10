@@ -1,4 +1,3 @@
-import{DeepSearch}from"./search.js";import{isFeatureEnabled}from"./config.js";import{initMonitoring}from"./monitoring.js";import{initScriptStudio}from"./script.js";import{initIslamic}from"./islamic.js";let CONFIG={API:{YOUTUBE_WORKER:window.__API_CONFIG__?.YOUTUBE_WORKER||"https://yt-studio-youtube-api.ruhdevopsytstudio.workers.dev",FALLBACK_DATA:"/data/demo.json"},STORAGE:{CHANNEL_KEY:"yt_studio_channel_id",CACHE_KEY:"yt_studio_videos_cache_v4",CACHE_EXPIRY:864e5,PROJECTS_KEY:"yt_studio_projects",RESEARCH_KEY:"yt_studio_research",WATCH_LATER_KEY:"watch_later_list",THEME_KEY:"ui_theme",SEARCH_HISTORY_KEY:"search_history",PROGRESS_KEY:"watch_progress"},UI:{ITEMS_PER_PAGE:15,LAZY_LOAD_THRESHOLD:400},API_CONFIG:{timeout:1e4,retries:3,backoff:1.5,delay:500}},CATEGORIES=[{key:"quran",label:"Quran",terms:["quran","surah","ayah","allah","tafsir","islam"]},{key:"prophecy",label:"Prophecy",terms:["prophecy","dajjal","gog","magog","end times"]},{key:"discussion",label:"Discussion",terms:["podcast","debate","interview","conversation"]},{key:"educational",label:"Educational",terms:["lesson","guide","explained","documentary"]},{key:"history",label:"History",terms:["history","empire","caliph","war","civilization"]}],DOM={body:document.body,grid:document.getElementById("grid"),modal:document.getElementById("modal"),player:document.getElementById("player"),closeModal:document.getElementById("close"),toast:document.getElementById("toast"),heroTitle:document.getElementById("hero-title"),heroDesc:document.getElementById("hero-desc"),heroBtn:document.getElementById("hero-btn"),heroSave:document.getElementById("hero-save"),heroCategory:document.getElementById("hero-category"),heroDate:document.getElementById("hero-date"),bg:document.getElementById("bg"),search:document.getElementById("searchInput"),searchToggle:document.getElementById("searchToggleBtn"),searchSection:document.getElementById("searchSection"),clearSearch:document.getElementById("clearSearch"),resultsMeta:document.getElementById("results-meta"),loadMore:document.getElementById("loadMoreBtn"),loadMoreContainer:document.getElementById("loadMoreContainer"),loading:document.getElementById("loading"),error:document.getElementById("error"),errorMsg:document.getElementById("error-msg"),retryBtn:document.getElementById("retryBtn"),themeToggle:document.getElementById("themeToggleBtn"),menuToggle:document.getElementById("menuToggleBtn"),scrollToTop:document.getElementById("scrollToTop"),watchLaterBadge:document.getElementById("watchLaterBadge"),watchLaterCount:document.getElementById("watchLaterCount"),watchLaterPage:document.getElementById("watchLaterPage"),watchLaterContainer:document.getElementById("watchLaterContainer"),closeWatchLater:document.getElementById("closeWatchLater"),dashboardBtn:document.getElementById("dashboardBtn"),dashboardModal:document.getElementById("dashboardModal"),closeDashboard:document.getElementById("closeDashboard"),dashTotal:document.getElementById("dashboard-total"),dashSaved:document.getElementById("dashboard-saved"),dashProgress:document.getElementById("dashboard-progress"),dashHours:document.getElementById("dashboard-hours"),dashCategories:document.getElementById("dashboardCategories"),dashResumeList:document.getElementById("dashboardResumeList"),modeSwitcher:document.getElementById("modeSwitcher"),modeBtns:document.querySelectorAll(".mode-btn"),studioRoot:document.getElementById("studio-root"),appRoot:document.getElementById("app-root"),heroSection:document.getElementById("hero"),continueBlock:document.getElementById("continue-block"),continueRow:document.getElementById("continue-row"),emptyHistory:document.getElementById("empty-history"),recommendedRow:document.getElementById("recommended-row"),recommendedBlockSec:document.getElementById("recommended-block"),continueBlockSec:document.getElementById("continue-block"),studioNavBtns:document.querySelectorAll(".studio-nav-btn"),studioViews:document.querySelectorAll(".studio-view"),studioBreadcrumbs:document.getElementById("studioBreadcrumbs"),studioViewProjects:document.getElementById("studio-view-projects"),activeProjectView:document.getElementById("active-project-view"),newProjectBtn:document.getElementById("newProjectBtn"),backToProjectsBtn:document.getElementById("backToProjectsBtn"),projectTabBtns:document.querySelectorAll(".project-tab-btn"),ptabContents:document.querySelectorAll(".ptab-content"),channelInput:document.getElementById("channelIdInput"),connectBtn:document.getElementById("connectChannelBtn"),clearFilters:document.getElementById("clearFilters")},AppState={videos:[],filtered:[],hero:null,current:null,categories:["all"],search:"",page:0,watchLater:[],theme:"dark",debounceTimer:null,searchHistory:[],progress:{},ytPlayer:null,isPlaying:!1,isMuted:!1,currentView:"list",lastFocused:null},Utils={sanitize(e){return String(e??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")},truncate(e,t){return e?e.length>t?e.slice(0,t)+"...":e:""},formatDate(e){try{return new Intl.DateTimeFormat("en",{month:"short",day:"numeric",year:"numeric"}).format(new Date(e))}catch{return""}},highlight(e,t){return t?(t=new RegExp(`(${this.escapeRegex(t)})`,"gi"),e.replace(t,"<mark>$1</mark>")):e},escapeRegex(e){return e.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")},saveLS(e,t){try{localStorage.setItem(e,JSON.stringify(t))}catch(e){console.error("LS Save Error:",e)}},getLS(e,t=null){try{var a=localStorage.getItem(e);return a?JSON.parse(a):t}catch{return t}},async fetchWithRetry(a,o=CONFIG.API_CONFIG){let s=o.delay;for(let t=0;t<o.retries;t++)try{let e=new AbortController;var r=setTimeout(()=>e.abort(),o.timeout),n=await fetch(a,{signal:e.signal});if(clearTimeout(r),n.ok)return n;throw new Error("API Error: "+n.status)}catch(e){if(t===o.retries-1)throw e;await new Promise(e=>setTimeout(e,s)),s*=o.backoff}},showToast(e,t="info"){DOM.toast&&(DOM.toast.textContent=e,DOM.toast.className="toast show","info"!==t&&DOM.toast.classList.add(t),setTimeout(()=>DOM.toast.classList.remove("show"),3e3))},async copyToClipboard(e,t){try{if(await navigator.clipboard.writeText(e),this.showToast("Copied to clipboard!","success"),t){let e=document.createElement("span");e.className="copy-feedback",e.textContent="Copied!",t.style.position="relative",t.appendChild(e),setTimeout(()=>e.classList.add("show"),10),setTimeout(()=>{e.classList.remove("show"),setTimeout(()=>e.remove(),200)},2e3)}}catch(e){console.error("Failed to copy: ",e),this.showToast("Failed to copy","error")}},trapFocus(e){AppState.lastFocused=document.activeElement;var t=e.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');let a=t[0],o=t[t.length-1];e.addEventListener("keydown",e=>{"Tab"!==e.key&&9!==e.keyCode||(e.shiftKey?document.activeElement===a&&(o.focus(),e.preventDefault()):document.activeElement===o&&(a.focus(),e.preventDefault()))}),a&&a.focus()}};function getCategoryLabel(t){var e=CATEGORIES.find(e=>e.key===t);return e?e.label:"History"}function detectCategory(e){let t=(e||"").toLowerCase();e=CATEGORIES.find(e=>e.terms.some(e=>t.includes(e)));return e?e.key:"history"}function getProgress(e){return AppState.progress[e]||null}async function fetchYouTubeChannelData(){try{var e=await fetch(CONFIG.API.YOUTUBE_WORKER+"/api/channel");if(e.ok)return await e.json();throw new Error("Failed to fetch channel data")}catch(e){return console.error("YouTube Worker Error:",e),null}}async function loadVideos(){DOM.loading&&(DOM.loading.style.display="block");var e=Utils.getLS(CONFIG.STORAGE.CACHE_KEY);if(e&&e.data&&e.data.length&&Date.now()-e.time<CONFIG.STORAGE.CACHE_EXPIRY)return DOM.loading&&(DOM.loading.style.display="none"),e.data;try{var t=Utils.getLS(CONFIG.STORAGE.CHANNEL_KEY);let e=CONFIG.API.YOUTUBE_WORKER+"/api/videos";t&&(e+="?channelId="+t);var a=await(await Utils.fetchWithRetry(e)).json(),o=(console.log("API Fetch Success:",a),(a.videos||[]).map(e=>({id:e.id||e.videoId,title:e.title||"Untitled",thumbnail:e.thumbnail||`https://i.ytimg.com/vi/${e.id}/hqdefault.jpg`,publishedAt:e.publishedAt||(new Date).toISOString(),category:detectCategory(e.title),description:e.description||"Deep dive into Islamic history and theology."})));return console.log("Processed Videos:",o.length),o.length&&Utils.saveLS(CONFIG.STORAGE.CACHE_KEY,{data:o,time:Date.now()}),DOM.loading&&(DOM.loading.style.display="none"),o}catch(e){DOM.loading&&(DOM.loading.style.display="none"),console.error("Worker fetch failed, using fallback:",e);try{var s,r,n=await fetch(CONFIG.API.FALLBACK_DATA);if(n.ok)return s=await n.json(),console.log("Fallback Data Loaded:",s),document.body.classList.add("demo-mode"),r=(s.videos||[]).map(e=>({...e,category:e.category||"history",description:e.description||"Deep dive into Islamic history and theology."})),console.log("Processed Fallback Videos:",r.length),r;throw new Error("Fallback HTTP error: "+n.status)}catch(e){return console.error("Fallback fetch also failed:",e),[]}}}function renderCard(t,e=0){var a=AppState.watchLater.some(e=>e.id===t.id),o=t.thumbnail||`https://i.ytimg.com/vi/${t.id}/hqdefault.jpg`,s=getProgress(t.id);return`
 import { DeepSearch } from './search.js';
 import { isFeatureEnabled } from './config.js';
 import { initMonitoring } from './monitoring.js';
@@ -99,6 +98,20 @@ const DOM = {
     // Theme & UI
     themeToggle: document.getElementById('themeToggleBtn'),
     themeMenu: document.getElementById('themeMenu'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
     episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
     episodesSection: document.getElementById('episodesSection'),
     menuToggle: document.getElementById('menuToggleBtn'),
@@ -435,7 +448,8 @@ function renderCard(video, index = 0) {
                 ${s?`<div class="progress-bar-container"><div class="progress-bar-fill" style="width:${s.percent}%"></div></div>`:""}
                 <button class="watch-later-btn ${a?"active":""}" 
                         data-id="${t.id}" 
-                        aria-label="${a?"Remove from Watch Later":"Save for later"}">
+                        aria-label="${a?"Remove from Watch Later":"Save for later"}"
+                        title="${a?"Remove from Watch Later":"Save for later"}">
                     <i class="fa-${a?"solid":"regular"} fa-bookmark"></i>
                 </button>
             </div>
@@ -1028,6 +1042,83 @@ function bindEvents() {
         });
     }
 
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
     if (DOM.heroBtn) DOM.heroBtn.addEventListener('click', () => AppState.hero && openVideo(AppState.hero));
     if (DOM.heroSave) DOM.heroSave.addEventListener('click', () => AppState.hero && toggleWatchLater(AppState.hero));
 
@@ -1239,6 +1330,19 @@ function bindEvents() {
         // Theme toggle
         if (key === 't') {
             toggleTheme();
+        }
+
+        // Watch Later toggle
+        if (key === 'b') {
+            if (AppState.current) {
+                toggleWatchLater(AppState.current);
+            } else if (DOM.watchLaterPage) {
+                if (DOM.watchLaterPage.style.display === 'block') {
+                    closeWatchLater();
+                } else {
+                    openWatchLater();
+                }
+            }
         }
     });
 
