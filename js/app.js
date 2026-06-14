@@ -1321,19 +1321,18 @@ function bindEvents() {
             } else if (key === 'k') {
                 e.preventDefault();
                 navigateVideo(1);
-            } else if (key === 'b') {
-                e.preventDefault();
-                toggleWatchLater(AppState.current);
             }
         }
 
         // Theme toggle
         if (key === 't') {
+            e.preventDefault();
             toggleTheme();
         }
 
         // Watch Later toggle
         if (key === 'b') {
+            e.preventDefault();
             if (AppState.current) {
                 toggleWatchLater(AppState.current);
             } else if (DOM.watchLaterPage) {
@@ -1342,6 +1341,16 @@ function bindEvents() {
                 } else {
                     openWatchLater();
                 }
+            }
+        }
+
+        // Dashboard toggle
+        if (key === 'd' && DOM.dashboardModal) {
+            e.preventDefault();
+            if (DOM.dashboardModal.style.display === 'block') {
+                closeDashboard();
+            } else {
+                openDashboard();
             }
         }
     });
