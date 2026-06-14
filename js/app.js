@@ -750,6 +750,7 @@ function openDashboard() {
     initAIAssistant();
     DOM.dashboardModal.style.display = 'block';
     DOM.dashboardModal.setAttribute('aria-hidden', 'false');
+    if (DOM.dashboardBtn) DOM.dashboardBtn.setAttribute('aria-expanded', 'true');
     Utils.trapFocus(DOM.dashboardModal);
     DOM.body.style.overflow = 'hidden';
     DOM.body.classList.add('modal-open');
@@ -759,6 +760,7 @@ function closeDashboard() {
     if (!DOM.dashboardModal) return;
     DOM.dashboardModal.style.display = "none";
     DOM.dashboardModal.setAttribute("aria-hidden", "true");
+    if (DOM.dashboardBtn) DOM.dashboardBtn.setAttribute('aria-expanded', 'false');
     DOM.body.style.overflow = "";
     DOM.body.classList.remove("modal-open");
     if (AppState.lastFocused) { AppState.lastFocused.focus(); AppState.lastFocused = null; }
@@ -1330,6 +1332,17 @@ function bindEvents() {
         // Theme toggle
         if (key === 't') {
             toggleTheme();
+        }
+
+        // Dashboard toggle
+        if (key === 'd') {
+            if (DOM.dashboardModal) {
+                if (DOM.dashboardModal.style.display === 'block') {
+                    closeDashboard();
+                } else {
+                    openDashboard();
+                }
+            }
         }
 
         // Watch Later toggle
