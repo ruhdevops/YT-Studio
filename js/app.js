@@ -122,6 +122,382 @@ const DOM = {
     watchLaterBadge: document.getElementById('watchLaterBadge'),
     watchLaterCount: document.getElementById('watchLaterCount'),
     watchLaterPage: document.getElementById('watchLaterPage'),
+    watchLaterContainer: document.getElementById('watchLaterContainer'),
+    closeWatchLater: document.getElementById('closeWatchLater'),
+
+    // Dashboard
+    dashboardBtn: document.getElementById('dashboardBtn'),
+    dashboardModal: document.getElementById('dashboardModal'),
+    closeDashboard: document.getElementById('closeDashboard'),
+    dashTotal: document.getElementById('dashboard-total'),
+    dashSaved: document.getElementById('dashboard-saved'),
+    dashProgress: document.getElementById('dashboard-progress'),
+    dashHours: document.getElementById('dashboard-hours'),
+    dashCategories: document.getElementById('dashboardCategories'),
+    dashResumeList: document.getElementById('dashboardResumeList'),
+
+    // Studio Mode
+    modeSwitcher: document.getElementById('modeSwitcher'),
+    modeBtns: document.querySelectorAll('.mode-btn'),
+    studioRoot: document.getElementById('studio-root'),
+    appRoot: document.getElementById('app-root'),
+    heroSection: document.getElementById('hero'),
+    continueBlock: document.getElementById('continue-block'),
+    continueRow: document.getElementById('continue-row'),
+    emptyHistory: document.getElementById('empty-history'),
+    recommendedRow: document.getElementById('recommended-row'),
+    recommendedBlockSec: document.getElementById('recommended-block'),
+    continueBlockSec: document.getElementById('continue-block'),
+
+    // Studio Navigation
+    studioNavBtns: document.querySelectorAll('.studio-nav-btn'),
+    studioViews: document.querySelectorAll('.studio-view'),
+    studioBreadcrumbs: document.getElementById('studioBreadcrumbs'),
+    studioViewProjects: document.getElementById('studio-view-projects'),
+    activeProjectView: document.getElementById('active-project-view'),
+    newProjectBtn: document.getElementById('newProjectBtn'),
+    backToProjectsBtn: document.getElementById('backToProjectsBtn'),
+    projectTabBtns: document.querySelectorAll('.project-tab-btn'),
+    ptabContents: document.querySelectorAll('.ptab-content'),
+
+    // Misc
+    channelInput: document.getElementById('channelIdInput'),
+    connectBtn: document.getElementById('connectChannelBtn'),
+    clearFilters: document.getElementById('clearFilters')
+};
+
+// ============================================
+// APPLICATION STATE
+// ============================================
+const AppState = {
+    videos: [],
+    filtered: [],
+    hero: null,
+    current: null,
+    categories: ['all'],
+    search: '',
+    page: 0,
+    watchLater: [],
+    theme: 'dark',
+    debounceTimer: null,
+    searchHistory: [],
+    progress: {},
+    ytPlayer: null,
+    isPlaying: false,
+    isMuted: false,
+    currentView: 'list', lastFocused: null
+};
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+const Utils = {
+    sanitize(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    },
+
+    truncate(str, maxLength) {
+        if (!str) return '';
+        return str.length > maxLength ? str.slice(0, maxLength) + '...' : str;
+    },
+
+    formatDate(dateStr) {
+        try {
+            return new Intl.DateTimeFormat('en', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            }).format(new Date(dateStr));
+        } catch {
+            return '';
+        }
+    },
+
+    highlight(text, search) {
+        if (!search) return text;
+        const regex = new RegExp('(' + this.escapeRegex(search) + ')', 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+    },
+
+    escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    },
+
+    saveLS(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            console.error('LS Save Error:', e);
+        }
+    },
+
+    getLS(key, defaultValue = null) {
+        try {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : defaultValue;
+        } catch {
+            return defaultValue;
+        }
+    },
+
+    async fetchWithRetry(url, config = CONFIG.API_CONFIG) {
+        let delay = config.delay;
+        for (let i = 0; i < config.retries; i++) {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), config.timeout);
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeout);
+                if (response.ok) return response;
+                throw new Error(`API Error: ${response.status}`);
+            } catch (error) {
+                if (i === config.retries - 1) throw error;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= config.backoff;
+            }
+        }
+    },
+
+    showToast(message, type = "info") {
+        if (DOM.toast) {
+            DOM.toast.textContent = message;
+            DOM.toast.className = "toast show";
+            if (type !== "info") DOM.toast.classList.add(type);
+            setTimeout(() => DOM.toast.classList.remove("show"), 3000);
+        }
+    },
+
+    async copyToClipboard(text, element) {
+        try {
+            await navigator.clipboard.writeText(text);
+            this.showToast("Copied to clipboard!", "success");
+            if (element) {
+                const feedback = document.createElement("span");
+                feedback.className = "copy-feedback";
+                feedback.textContent = "Copied!";
+                element.style.position = "relative";
+                element.appendChild(feedback);
+                setTimeout(() => feedback.classList.add("show"), 10);
+                setTimeout(() => {
+                    feedback.classList.remove("show");
+                    setTimeout(() => feedback.remove(), 200);
+                }, 2000);
+            }
+        } catch (err) {
+            console.error("Failed to copy: ", err);
+            this.showToast("Failed to copy", "error");
+        }
+    },
+
+    trapFocus(element) {
+        AppState.lastFocused = document.activeElement;
+        const focusableEls = element.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        const firstFocusableEl = focusableEls[0];
+        const lastFocusableEl = focusableEls[focusableEls.length - 1];
+
+        element.addEventListener('keydown', (e) => {
+            const isTabPressed = (e.key === 'Tab' || e.keyCode === 9);
+            if (!isTabPressed) return;
+
+            if (e.shiftKey) {
+                if (document.activeElement === firstFocusableEl) {
+                    lastFocusableEl.focus();
+                    e.preventDefault();
+                }
+            } else {
+                if (document.activeElement === lastFocusableEl) {
+                    firstFocusableEl.focus();
+                    e.preventDefault();
+                }
+            }
+        });
+
+        if (firstFocusableEl) firstFocusableEl.focus();
+    }
+};
+
+// ============================================
+// CATEGORY HELPERS
+// ============================================
+function getCategoryLabel(key) {
+    const cat = CATEGORIES.find(c => c.key === key);
+    return cat ? cat.label : 'History';
+}
+
+function detectCategory(title) {
+    const text = (title || '').toLowerCase();
+    const cat = CATEGORIES.find(c => c.terms.some(term => text.includes(term)));
+    return cat ? cat.key : 'history';
+}
+
+// ============================================
+// PROGRESS TRACKING
+// ============================================
+function getProgress(videoId) {
+    return AppState.progress[videoId] || null;
+}
+
+// ============================================
+// YOUTUBE API INTEGRATION (via Cloudflare Worker)
+// ============================================
+async function fetchYouTubeChannelData() {
+    try {
+        const response = await fetch(`${CONFIG.API.YOUTUBE_WORKER}/api/channel`);
+        if (!response.ok) throw new Error('Failed to fetch channel data');
+        return await response.json();
+    } catch (error) {
+        console.error('YouTube Worker Error:', error);
+        return null;
+    }
+}
+
+async function loadVideos() {
+    if (DOM.loading) DOM.loading.style.display = 'block';
+
+    // Check cache first
+    const cached = Utils.getLS(CONFIG.STORAGE.CACHE_KEY);
+    if (cached && cached.data && cached.data.length && Date.now() - cached.time < CONFIG.STORAGE.CACHE_EXPIRY) {
+        if (DOM.loading) DOM.loading.style.display = 'none';
+        return cached.data;
+    }
+
+    try {
+        // Use the correct worker endpoint: /api/videos
+        const channelId = Utils.getLS(CONFIG.STORAGE.CHANNEL_KEY);
+        let url = `${CONFIG.API.YOUTUBE_WORKER}/api/videos`;
+        if (channelId) {
+            url += `?channelId=${channelId}`;
+        }
+
+        const response = await Utils.fetchWithRetry(url);
+        const data = await response.json();
+        console.log('API Fetch Success:', data);
+
+        const videos = (data.videos || []).map(video => ({
+            id: video.id || video.videoId,
+            title: video.title || 'Untitled',
+            thumbnail: video.thumbnail || `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`,
+            publishedAt: video.publishedAt || new Date().toISOString(),
+            category: detectCategory(video.title),
+            description: video.description || 'Deep dive into Islamic history and theology.'
+        }));
+
+        console.log('Processed Videos:', videos.length);
+
+        if (videos.length) {
+            Utils.saveLS(CONFIG.STORAGE.CACHE_KEY, { data: videos, time: Date.now() });
+        }
+
+        if (DOM.loading) DOM.loading.style.display = 'none';
+        return videos;
+
+    } catch (error) {
+        if (DOM.loading) DOM.loading.style.display = 'none';
+        console.error('Worker fetch failed, using fallback:', error);
+        try {
+            const fallback = await fetch(CONFIG.API.FALLBACK_DATA);
+            if (!fallback.ok) throw new Error(`Fallback HTTP error: ${fallback.status}`);
+            const data = await fallback.json();
+            console.log('Fallback Data Loaded:', data);
+
+            document.body.classList.add('demo-mode');
+            const videos = (data.videos || []).map(video => ({
+                ...video,
+                category: video.category || 'history',
+                description: video.description || 'Deep dive into Islamic history and theology.'
+            }));
+            console.log('Processed Fallback Videos:', videos.length);
+            return videos;
+        } catch (fallbackError) {
+            console.error('Fallback fetch also failed:', fallbackError);
+            return [];
+        }
+    }
+}
+
+// ============================================
+// RENDER FUNCTIONS
+// ============================================
+function renderCard(video, index = 0) {
+    const isSaved = AppState.watchLater.some(v => v.id === video.id);
+    const thumbnail = video.thumbnail || `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+    const progress = getProgress(video.id);
+
+    return `
+        <div class="card animate-in"
+             style="--index: ${e}"
+             data-id="${t.id}"
+             role="button"
+             tabindex="0"
+             aria-label="Watch ${Utils.sanitize(t.title)}">
+            <div class="card-thumb-wrapper">
+                <img data-src="${o}"
+                     src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+                     alt=""
+                     class="lazy-img"
+                     loading="lazy">
+                <div class="card-thumb-overlay">
+                    <i class="fa-solid fa-play play-icon" aria-hidden="true"></i>
+                </div>
+                <div class="duration-badge">HD</div>
+                ${s?`<div class="progress-bar-container"><div class="progress-bar-fill" style="width:${s.percent}%"></div></div>`:""}
+                <button class="watch-later-btn ${a?"active":""}"
+                        data-id="${t.id}"
+                        aria-label="${a?"Remove from Watch Later":"Save for later"}"
+                        title="${a?"Remove from Watch Later":"Save for later"}">
+                    <i class="fa-${a?"solid":"regular"} fa-bookmark"></i>
+                </button>
+            </div>
+            <div class="card-copy">
+                <div class="card-title">${Utils.highlight(Utils.sanitize(Utils.truncate(t.title,60)),AppState.search)}</div>
+                <div class="card-meta">
+                    <span class="card-tag">${getCategoryLabel(t.category)}</span>
+                    <span>${Utils.formatDate(t.publishedAt)}</span>
+                </div>
+            </div>
+        </div>
+    `}function renderHero(t){var e;t&&(DOM.heroTitle&&(DOM.heroTitle.textContent=t.title),DOM.heroDesc&&(DOM.heroDesc.textContent=t.description||""),DOM.heroCategory&&(DOM.heroCategory.textContent=getCategoryLabel(t.category)),DOM.heroDate&&(DOM.heroDate.textContent=Utils.formatDate(t.publishedAt)),DOM.bg&&(DOM.bg.style.backgroundImage=`url(${t.thumbnail})`),e=AppState.watchLater.some(e=>e.id===t.id),DOM.heroSave)&&(DOM.heroSave.innerHTML=`<i class="fa-${e?"solid":"regular"} fa-bookmark"></i> <span>${e?"Saved":"Save"}</span>`)}function renderGrid(){let a=AppState.search.toLowerCase();AppState.filtered=AppState.videos.filter(e=>{var t=AppState.categories.includes("all")||AppState.categories.includes(e.category),e=!a||e.title.toLowerCase().includes(a);return t&&e}),DOM.clearFilters&&(DOM.clearFilters.style.display=AppState.categories.includes("all")?"none":"inline-flex"),DOM.resultsMeta&&(DOM.resultsMeta.textContent=`${AppState.filtered.length} episode${1!==AppState.filtered.length?"s":""} found`);var e=AppState.filtered.slice(0,CONFIG.UI.ITEMS_PER_PAGE*(AppState.page+1));if(DOM.grid)if(0===AppState.filtered.length)DOM.grid.innerHTML=`
+                <div class="empty-state-card" style="grid-column: 1 / -1; margin-top: 40px;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <h3>No results found</h3>
+                    <p>Try different keywords or browse by category to find what you're looking for.</p>
+                    <button type="button" id="clearSearchEmpty" class="btn btn-secondary" style="margin-top: 20px;">
+                        Clear Search
+                    </button>
+                </div>
+            `;else if(DOM.grid.innerHTML=e.map((e,t)=>renderCard(e,t)).join(""),e.length<AppState.filtered.length){var o=document.createElement("div");o.id="grid-sentinel",o.style.height="10px",DOM.grid.appendChild(o);let t=new IntersectionObserver(e=>{e[0].isIntersecting&&(t.disconnect(),AppState.page++,renderGrid())},{rootMargin:"400px"});t.observe(o)}lazyLoadImages(),DOM.loadMoreContainer&&(DOM.loadMoreContainer.style.display=e.length<AppState.filtered.length?"block":"none")}function lazyLoadImages(){let t=new IntersectionObserver((e,a)=>{e.forEach(t=>{if(t.isIntersecting){let e=t.target;e.src=e.dataset.src,e.onload=()=>e.classList.add("loaded"),a.unobserve(e)}})},{rootMargin:"100px"});document.querySelectorAll(".lazy-img").forEach(e=>t.observe(e))}function renderContinueWatching(){var e;DOM.continueBlock&&DOM.continueRow&&((e=AppState.videos.filter(e=>{e=getProgress(e.id);return e&&5<=e.percent&&e.percent<95}).sort((e,t)=>getProgress(t.id).updated-getProgress(e.id).updated).slice(0,4)).length?(DOM.continueBlock.style.display="block",DOM.continueRow.innerHTML=e.map((e,t)=>renderCard(e,t)).join(""),DOM.emptyHistory&&(DOM.emptyHistory.style.display="none")):(DOM.continueBlock.style.display="none",DOM.emptyHistory&&AppState.videos.length&&(DOM.emptyHistory.style.display="block")))}function renderWatchLater(){DOM.watchLaterContainer&&(AppState.watchLater.length?(DOM.watchLaterContainer.innerHTML=AppState.watchLater.map(e=>{var t=e.thumbnail||`https://i.ytimg.com/vi/${e.id}/hqdefault.jpg`;return`
+                <div class="card" data-id="${e.id}" data-wl="1" role="button" tabindex="0" aria-label="Watch ${Utils.sanitize(e.title)}">
+                    <div class="card-thumb-wrapper">
+                        <img data-src="${t}" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="" class="lazy-img" loading="lazy">
+                        <button class="watch-later-btn active" data-id="${e.id}" aria-label="Remove ${Utils.sanitize(e.title)} from Watch Later">
+                            <i class="fa-solid fa-bookmark" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="card-copy">
+                        <div class="card-title">${Utils.highlight(Utils.sanitize(Utils.truncate(e.title,60)),AppState.search)}</div>
+                        <div class="card-meta">
+                            <span class="card-tag">${getCategoryLabel(e.category)}</span>
+                            <span>${Utils.formatDate(e.publishedAt)}</span>
+                        </div>
+                    </div>
+                </div>
+            `}).join(""),lazyLoadImages()):DOM.watchLaterContainer.innerHTML='<div class="empty-state">No episodes saved yet. Click the bookmark icon on any episode to save it.</div>')}function renderDashboard(){if(DOM.dashboardModal){if(DOM.dashTotal&&(DOM.dashTotal.textContent=AppState.videos.length),DOM.dashSaved&&(DOM.dashSaved.textContent=AppState.watchLater.length),DOM.dashProgress&&(DOM.dashProgress.textContent=Object.keys(AppState.progress).length),DOM.dashHours&&(DOM.dashHours.textContent=(.5*AppState.videos.length).toFixed(1)+"h"),DOM.dashCategories&&AppState.videos.length){let t={};AppState.videos.forEach(e=>{t[e.category]=(t[e.category]||0)+1}),DOM.dashCategories.innerHTML=Object.entries(t).sort((e,t)=>t[1]-e[1]).map(([e,t])=>`<div class="dashboard-list-row"><span>${getCategoryLabel(e)}</span><strong>${t}</strong></div>`).join("")}DOM.dashResumeList&&(DOM.dashResumeList.innerHTML=AppState.watchLater.length?AppState.watchLater.slice(0,5).map(e=>`
+                <div class="dashboard-list-row">
+                    <span>${Utils.sanitize(Utils.truncate(e.title,40))}</span>
+                    <strong>${getCategoryLabel(e.category)}</strong>
+                </div>
+            `).join(""):'<p style="color:var(--text-soft)">No saved episodes.</p>')}}function updateStats(){DOM.statTotal&&(DOM.statTotal.textContent=AppState.videos.length),DOM.statSaved&&(DOM.statSaved.textContent=AppState.watchLater.length),DOM.statProgress&&(DOM.statProgress.textContent=Object.keys(AppState.progress).length),DOM.watchLaterCount&&(DOM.watchLaterCount.textContent=AppState.watchLater.length),DOM.watchLaterBadge&&DOM.watchLaterBadge.setAttribute("aria-label",`Open watch later list (${AppState.watchLater.length} episodes)`)}function openVideo(e){var t;DOM.modal&&DOM.player&&(t=getProgress((AppState.current=e).id)?.time||0,DOM.player.src=`https://www.youtube.com/embed/${e.id}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1&start=`+Math.floor(t),DOM.modal.style.display="flex",DOM.modal.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.modal),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"),(t=document.getElementById("video-title"))&&(t.textContent=e.title),DOM.transcriptPanel&&DOM.transcriptPanel.setAttribute("aria-hidden","true"),DOM.sharePanel)&&DOM.sharePanel.setAttribute("aria-hidden","true")}function closeVideo(){DOM.modal&&DOM.player&&(DOM.player.src="",DOM.modal.style.display="none",DOM.modal.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.current=null,clearInterval(AppState.progressTimer),renderContinueWatching(),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}function navigateVideo(t){if(AppState.current&&AppState.filtered.length){var a=AppState.filtered.findIndex(e=>e.id===AppState.current.id);if(-1!==a){let e=a+t;(e=e<0?AppState.filtered.length-1:e)>=AppState.filtered.length&&(e=0),openVideo(AppState.filtered[e])}}}function toggleWatchLater(t){var e=AppState.watchLater.findIndex(e=>e.id===t.id);-1===e?(AppState.watchLater.push(t),Utils.showToast("Added to Watch Later")):(AppState.watchLater.splice(e,1),Utils.showToast("Removed from Watch Later")),Utils.saveLS(CONFIG.STORAGE.WATCH_LATER_KEY,AppState.watchLater),updateStats(),AppState.hero&&AppState.hero.id===t.id&&renderHero(AppState.hero),renderGrid(),DOM.watchLaterContainer&&renderWatchLater()}function openWatchLater(){DOM.watchLaterPage&&(renderWatchLater(),DOM.watchLaterPage.style.display="block",DOM.watchLaterPage.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.watchLaterPage),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"))}function closeWatchLater(){DOM.watchLaterPage&&(DOM.watchLaterPage.style.display="none",DOM.watchLaterPage.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}let initAnalyticsChart=async()=>{var e=document.getElementById("analyticsChart");e&&(window.Chart||await new Promise(e=>{var t=document.createElement("script");t.src="https://cdn.jsdelivr.net/npm/chart.js",t.onload=e,document.head.appendChild(t)}),e=e.getContext("2d"),window.myChart&&window.myChart.destroy(),window.myChart=new Chart(e,{type:"line",data:{labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],datasets:[{label:"Subscriber Growth",data:[12,19,3,5,2,3,9],borderColor:"#e50914",backgroundColor:"rgba(229, 9, 20, 0.1)",fill:!0,tension:.4}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{display:!1}},scales:{y:{display:!1},x:{grid:{display:!1},ticks:{color:"#808080",font:{size:10}}}}}}))},initAIAssistant=()=>{var e;if(isFeatureEnabled("AI_ASSISTANT")){let s=document.getElementById("ai-score-title"),a=document.getElementById("ai-generate-hook"),o=document.getElementById("ai-title-input");s&&s.addEventListener("click",()=>{o.value.trim()?(s.disabled=!0,s.innerHTML='<i class="fas fa-spinner fa-spin"></i>',setTimeout(()=>{var e=Math.floor(30*Math.random()+65),t=document.getElementById("ai-score-result"),a=document.getElementById("ai-score-value"),o=document.getElementById("ai-score-bar");t.classList.remove("hidden"),a.textContent=e+"/100",o.style.width=e+"%",s.disabled=!1,s.textContent="Score",Utils.showToast("Title analyzed!","success")},1e3)):Utils.showToast("Please enter a title","warning")}),a&&a.addEventListener("click",()=>{a.disabled=!0,a.innerHTML='<i class="fas fa-spinner fa-spin"></i> Analyzing...';let t=["What if everything you knew about the fall of Andalusia was wrong?","Behind the silence of history lies a truth far more cinematic than fiction.","The year was 1492. The world was changing. And at the center of it all?","How did one decision change the course of human history forever?"];setTimeout(()=>{var e=document.getElementById("ai-hook-result");e.classList.remove("hidden"),e.textContent=t[Math.floor(Math.random()*t.length)],a.disabled=!1,a.innerHTML='<i class="fas fa-bolt mr-2 text-primary"></i> Generate Viral Hook',Utils.showToast("Hook generated!","success")},1200)}),document.querySelectorAll("#ai-topics span").forEach(t=>{t.addEventListener("click",()=>{var e=t.textContent;o&&(o.value=e,Utils.showToast("Selected: "+e,"info"))}),t.addEventListener("keydown",e=>{"Enter"!==e.key&&" "!==e.key||(e.preventDefault(),t.click())})})}else(e=document.getElementById("ai-assistant-panel"))&&(e.style.display="none")};function openDashboard(){DOM.dashboardModal&&(renderDashboard(),initAnalyticsChart(),initAIAssistant(),DOM.dashboardModal.style.display="block",DOM.dashboardModal.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.dashboardModal),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"))}function closeDashboard(){DOM.dashboardModal&&(DOM.dashboardModal.style.display="none",DOM.dashboardModal.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}function setTheme(t){AppState.theme=t,Utils.saveLS(CONFIG.STORAGE.THEME_KEY,t),DOM.body.classList.remove("light-mode","theme-neon"),"light"===t?DOM.body.classList.add("light-mode"):"neon"===t&&DOM.body.classList.add("theme-neon");var e=DOM.themeToggle?.querySelector("i");e&&(e.className="dark"===t?"fa-regular fa-moon":"neon"===t?"fa-solid fa-bolt":"fa-regular fa-sun"),document.querySelectorAll(".theme-opt").forEach(e=>{e.classList.toggle("active",e.dataset.theme===t)})}function toggleTheme(){setTheme("dark"===AppState.theme?"light":"dark")}function switchMode(e){"creator"===e?(DOM.studioRoot&&(DOM.studioRoot.style.display="block"),DOM.appRoot&&(DOM.appRoot.style.display="none"),DOM.heroSection&&(DOM.heroSection.style.display="none"),DOM.continueBlockSec&&(DOM.continueBlockSec.style.display="none"),updateBreadcrumbs("Studio > Projects")):(DOM.studioRoot&&(DOM.studioRoot.style.display="none"),DOM.appRoot&&(DOM.appRoot.style.display="block"),DOM.heroSection&&(DOM.heroSection.style.display="block"),DOM.continueBlockSec&&AppState.videos.some(e=>getProgress(e.id))&&(DOM.continueBlockSec.style.display="block"))}function updateBreadcrumbs(e){if(DOM.studioBreadcrumbs){let a=e.split(" > ");DOM.studioBreadcrumbs.innerHTML=a.map((e,t)=>t===a.length-1?`<span class="current">${e}</span>`:`<span>${e}</span>`).join(' <i class="fa-solid fa-chevron-right" style="font-size:0.7rem; margin:0 8px; opacity:0.5;"></i> ')}}function renderProjects(){var e=document.getElementById("studioProjectsList");if(e){let o=Utils.getLS(CONFIG.STORAGE.PROJECTS_KEY,[{id:"p1",title:"The Fall of the Abbasids",status:"Writing",progress:65,date:"2024-05-10"},{id:"p2",title:"Prophecy & Modernity",status:"Researching",progress:30,date:"2024-05-12"},{id:"p3",title:"The Silent Silk Road",status:"Editing",progress:90,date:"2024-05-08"},{id:"p4",title:"The Golden Age",status:"Published",progress:100,date:"2024-05-01"}]);"list"===AppState.currentView?(e.className="studio-projects-grid",e.innerHTML=o.map(e=>`
+            `).join('')
+            : '<p style="color:var(--text-soft)">No saved episodes.</p>';
+    }
+}
+
+function updateStats() {
     if (DOM.statTotal) DOM.statTotal.textContent = AppState.videos.length;
     if (DOM.statSaved) DOM.statSaved.textContent = AppState.watchLater.length;
     if (DOM.statProgress) DOM.statProgress.textContent = Object.keys(AppState.progress).length;
@@ -953,11 +1329,13 @@ function bindEvents() {
 
         // Theme toggle
         if (key === 't') {
+            e.preventDefault();
             toggleTheme();
         }
 
         // Watch Later toggle
         if (key === 'b') {
+            e.preventDefault();
             if (AppState.current) {
                 toggleWatchLater(AppState.current);
             } else if (DOM.watchLaterPage) {
@@ -966,6 +1344,16 @@ function bindEvents() {
                 } else {
                     openWatchLater();
                 }
+            }
+        }
+
+        // Dashboard toggle
+        if (key === 'd' && DOM.dashboardModal) {
+            e.preventDefault();
+            if (DOM.dashboardModal.style.display === 'block') {
+                closeDashboard();
+            } else {
+                openDashboard();
             }
         }
     });
