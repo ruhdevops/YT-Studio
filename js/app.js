@@ -100,20 +100,6 @@ const DOM = {
     themeMenu: document.getElementById('themeMenu'),
     episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
     episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
     menuToggle: document.getElementById('menuToggleBtn'),
     scrollToTop: document.getElementById('scrollToTop'),
 
@@ -1330,6 +1316,17 @@ function bindEvents() {
         // Theme toggle
         if (key === 't') {
             toggleTheme();
+        }
+
+        // Dashboard toggle
+        if (key === 'd') {
+            if (DOM.dashboardModal) {
+                if (DOM.dashboardModal.style.display === 'block') {
+                    closeDashboard();
+                } else {
+                    openDashboard();
+                }
+            }
         }
 
         // Watch Later toggle
