@@ -1344,6 +1344,15 @@ function bindEvents() {
                 }
             }
         }
+
+        // Dashboard toggle
+        if (key === 'd' && DOM.dashboardModal) {
+            if (DOM.dashboardModal.style.display === 'block') {
+                closeDashboard();
+            } else {
+                openDashboard();
+            }
+        }
     });
 
     // Mouse move effect for cards
