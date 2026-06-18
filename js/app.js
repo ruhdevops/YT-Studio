@@ -100,20 +100,6 @@ const DOM = {
     themeMenu: document.getElementById('themeMenu'),
     episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
     episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
     menuToggle: document.getElementById('menuToggleBtn'),
     scrollToTop: document.getElementById('scrollToTop'),
 
@@ -750,6 +736,7 @@ function openDashboard() {
     initAIAssistant();
     DOM.dashboardModal.style.display = 'block';
     DOM.dashboardModal.setAttribute('aria-hidden', 'false');
+    if (DOM.dashboardBtn) DOM.dashboardBtn.setAttribute('aria-expanded', 'true');
     Utils.trapFocus(DOM.dashboardModal);
     DOM.body.style.overflow = 'hidden';
     DOM.body.classList.add('modal-open');
@@ -759,6 +746,7 @@ function closeDashboard() {
     if (!DOM.dashboardModal) return;
     DOM.dashboardModal.style.display = "none";
     DOM.dashboardModal.setAttribute("aria-hidden", "true");
+    if (DOM.dashboardBtn) DOM.dashboardBtn.setAttribute('aria-expanded', 'false');
     DOM.body.style.overflow = "";
     DOM.body.classList.remove("modal-open");
     if (AppState.lastFocused) { AppState.lastFocused.focus(); AppState.lastFocused = null; }
@@ -1042,83 +1030,6 @@ function bindEvents() {
         });
     }
 
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
     if (DOM.heroBtn) DOM.heroBtn.addEventListener('click', () => AppState.hero && openVideo(AppState.hero));
     if (DOM.heroSave) DOM.heroSave.addEventListener('click', () => AppState.hero && toggleWatchLater(AppState.hero));
 
@@ -1330,6 +1241,17 @@ function bindEvents() {
         // Theme toggle
         if (key === 't') {
             toggleTheme();
+        }
+
+        // Dashboard toggle
+        if (key === 'd') {
+            if (DOM.dashboardModal) {
+                if (DOM.dashboardModal.style.display === 'block') {
+                    closeDashboard();
+                } else {
+                    openDashboard();
+                }
+            }
         }
 
         // Watch Later toggle
