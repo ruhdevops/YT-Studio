@@ -33,7 +33,7 @@
     "build:js": "esbuild src/index.js --bundle --outfile=dist/bundle.js --minify"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260508.1",
+    "@cloudflare/workers-types": "^4.20260511.1",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.5.0",
     "chokidar-cli": "^3.0.0",
