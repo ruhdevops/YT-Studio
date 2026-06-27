@@ -590,6 +590,19 @@ body {
     transform: translateY(0);
   }
 
+  .btn:active,
+  .action-btn:active,
+  .nav-link:active,
+  .card:active,
+  .chip:active,
+  .social-links a:active,
+  .scroll-to-top:active,
+  .menu-toggle:active,
+  .search-clear:active,
+  .navbar-brand:active {
+    transform: scale(0.97);
+  }
+
   .btn-secondary {
     background-color: rgba(255, 255, 255, 0.15);
     color: white;

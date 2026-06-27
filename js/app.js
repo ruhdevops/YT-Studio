@@ -1033,6 +1033,20 @@ function bindEvents() {
     });
 
     // Hero buttons
+    // Brand Scroll to Top
+    const brand = document.querySelector('.navbar-brand');
+    if (brand) {
+        brand.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        brand.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    }
+
     // Navbar Episodes Scroll
     if (DOM.episodesNavBtn && DOM.episodesSection) {
         DOM.episodesNavBtn.addEventListener('click', () => {

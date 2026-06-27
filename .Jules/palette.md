@@ -50,3 +50,7 @@
 ## 2025-05-14 - Social Sharing Implementation
 **Learning:** Placeholders for social sharing buttons significantly degrade UX when users expect to share discovered content. Standardizing these intents with popup windows (550x450) provides a "premium" feel while keeping users on the platform.
 **Action:** Always verify if sharing icons in modals are functional; if not, implement standardized platform intents using centered popups.
+
+## 2026-06-27 - Tactile Feedback and Logo-Navigation Patterns
+**Learning:** Adding a subtle :active scale effect (0.97) across all interactive elements provides immediate, satisfying tactile feedback that improves the "feel" of the application. Using the brand logo as a "Back to Top" trigger is an intuitive navigation pattern for long-scrolling archives.
+**Action:** Implement global :active scale transforms for all interactive components. Ensure brand logos are keyboard-accessible and serve as navigation anchors to the page top.
