@@ -58,3 +58,7 @@
 ## 2025-05-30 - Dynamic Document Title Management
 **Learning:** In single-page applications with modal-based content viewing, updating the browser tab title to reflect the active content improves accessibility for screen readers and helps users manage multiple open tabs.
 **Action:** Update \`document.title\` when opening significant modals (like video players) and restore it to the brand default upon closing.
+
+## 2025-05-30 - Dynamic Document Title Management
+**Learning:** In single-page applications with modal-based content viewing, updating the browser tab title to reflect the active content improves accessibility for screen readers and helps users manage multiple open tabs.
+**Action:** Update \`document.title\` when opening significant modals (like video players) and restore it to the brand default upon closing.

@@ -67,6 +67,7 @@ const DOM = {
     navbarBrand: document.getElementById('navbarBrand'),
     navbarBrand: document.getElementById('navbarBrand'),
     navbarBrand: document.getElementById('navbarBrand'),
+    navbarBrand: document.getElementById('navbarBrand'),
     grid: document.getElementById('grid'),
     modal: document.getElementById('modal'),
     modalSaveBtn: document.getElementById('modalSaveBtn'),
@@ -512,6 +513,7 @@ function openVideo(video) {
     document.title = `${video.title} | Ruh Al Tarikh`;
     document.title = `${video.title} | Ruh Al Tarikh`;
     document.title = `${video.title} | Ruh Al Tarikh`;
+    document.title = `${video.title} | Ruh Al Tarikh`;
 
     if (DOM.transcriptPanel) DOM.transcriptPanel.setAttribute('aria-hidden', 'true');
     if (DOM.sharePanel) DOM.sharePanel.setAttribute('aria-hidden', 'true');
@@ -536,6 +538,7 @@ function closeVideo() {
     DOM.body.style.overflow = "";
     DOM.body.classList.remove("modal-open");
     AppState.current = null;
+    document.title = 'Ruh Al Tarikh | Cinematic Islamic Archive';
     document.title = 'Ruh Al Tarikh | Cinematic Islamic Archive';
     document.title = 'Ruh Al Tarikh | Cinematic Islamic Archive';
     document.title = 'Ruh Al Tarikh | Cinematic Islamic Archive';
@@ -885,7 +888,6 @@ function renderProjects() {
     });
 }
 
-
 function setupRecommendedSection() {
     if (!DOM.recommendedRow) return;
 
@@ -948,7 +950,7 @@ function bindEvents() {
         });
     }
 
-            // Mobile Menu Toggle
+                // Mobile Menu Toggle
     if (DOM.menuToggle) {
         DOM.menuToggle.addEventListener('click', () => {
             const isActive = document.body.classList.toggle('mobile-nav-active');
@@ -985,8 +987,7 @@ function bindEvents() {
         });
     }
 
-
-    if (DOM.heroBtn) DOM.heroBtn.addEventListener('click', () => AppState.hero && openVideo(AppState.hero));
+if (DOM.heroBtn) DOM.heroBtn.addEventListener('click', () => AppState.hero && openVideo(AppState.hero));
     if (DOM.heroSave) DOM.heroSave.addEventListener('click', () => AppState.hero && toggleWatchLater(AppState.hero));
 
     // Modal close
@@ -1209,6 +1210,12 @@ function bindEvents() {
             } else if (key === 'n') {
                 e.preventDefault();
                 openTranscript();
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
             }
         }
 
@@ -1232,6 +1239,12 @@ function bindEvents() {
         if (key === 'b') {
             if (AppState.current) {
                 toggleWatchLater(AppState.current);
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
             } else if (key === 's') {
                 e.preventDefault();
                 openShare();
