@@ -1326,6 +1326,12 @@ function bindEvents() {
             } else if (key === 'b') {
                 e.preventDefault();
                 toggleWatchLater(AppState.current);
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
             }
         }
 
@@ -1516,6 +1522,7 @@ if (document.readyState === 'loading') {
 
 function openShare() {
     if (!DOM.sharePanel) return;
+    if ('vibrate' in navigator) navigator.vibrate(10);
     const shareLink = document.getElementById("shareLink");
     if (shareLink && AppState.current) {
         shareLink.value = "https://www.youtube.com/watch?v=" + AppState.current.id;
@@ -1529,6 +1536,7 @@ function openShare() {
 
 function openTranscript() {
     if (!DOM.transcriptPanel) return;
+    if ('vibrate' in navigator) navigator.vibrate(10);
     DOM.transcriptPanel.style.display = "block";
     DOM.transcriptPanel.setAttribute("aria-hidden", "false");
     DOM.body.style.overflow = "hidden";

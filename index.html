@@ -348,8 +348,8 @@
             <div class="flex items-center justify-between mb-6">
               <h3 class="font-display text-xl">Active Projects</h3>
               <div class="flex bg-black/20 p-1 rounded-lg">
-                <button id="listViewBtn" class="p-2 rounded-md active"><i class="fas fa-list"></i></button>
-                <button id="kanbanViewBtn" class="p-2 rounded-md"><i class="fas fa-th-large"></i></button>
+                <button id="listViewBtn" class="p-2 rounded-md active" aria-label="List View" title="List View"><i class="fas fa-list"></i></button>
+                <button id="kanbanViewBtn" class="p-2 rounded-md" aria-label="Kanban View" title="Kanban View"><i class="fas fa-th-large"></i></button>
               </div>
             </div>
             <div id="studioProjectsList" class="studio-projects-grid">
@@ -365,7 +365,7 @@
           <!-- Active Project Detail View -->
           <div id="active-project-view" class="studio-view hidden">
             <div class="flex items-center gap-4 mb-6">
-              <button id="backToProjectsBtn" class="action-btn"><i class="fas fa-arrow-left"></i></button>
+              <button id="backToProjectsBtn" class="action-btn" aria-label="Back to Projects" title="Back to Projects"><i class="fas fa-arrow-left"></i></button>
               <h3 id="current-project-title" class="font-display text-xl">New Project</h3>
             </div>
             
@@ -430,7 +430,7 @@
         </div>
 
         <div class="modal-actions">
-          <button id="shareEpisode" class="modal-action-btn" title="Share">
+          <button id="shareEpisode" class="modal-action-btn" title="Share (S)" title="Share (S)" title="Share (S)">
             <i class="fas fa-share-alt"></i>
             <span>Share</span>
           </button>
@@ -438,7 +438,7 @@
             <i class="fas fa-bookmark"></i>
             <span>Save</span>
           </button>
-          <button id="toggleTranscript" class="modal-action-btn" title="Transcript">
+          <button id="toggleTranscript" class="modal-action-btn" title="Notes (N)" title="Notes (N)" title="Notes (N)">
             <i class="fas fa-closed-captioning"></i>
             <span>Notes</span>
           </button>
