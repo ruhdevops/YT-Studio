@@ -50,3 +50,7 @@
 ## 2025-05-14 - Social Sharing Implementation
 **Learning:** Placeholders for social sharing buttons significantly degrade UX when users expect to share discovered content. Standardizing these intents with popup windows (550x450) provides a "premium" feel while keeping users on the platform.
 **Action:** Always verify if sharing icons in modals are functional; if not, implement standardized platform intents using centered popups.
+
+## 2025-05-30 - Dynamic Document Title Management
+**Learning:** In single-page applications with modal-based content viewing, updating the browser tab title to reflect the active content improves accessibility for screen readers and helps users manage multiple open tabs.
+**Action:** Update `document.title` when opening significant modals (like video players) and restore it to the brand default upon closing.

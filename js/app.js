@@ -64,6 +64,7 @@ const CATEGORIES = [
 const DOM = {
     // Core elements
     body: document.body,
+    navbarBrand: document.getElementById('navbarBrand'),
     grid: document.getElementById('grid'),
     modal: document.getElementById('modal'),
     modalSaveBtn: document.getElementById('modalSaveBtn'),
@@ -527,6 +528,7 @@ function openVideo(video) {
 
     const titleEl = document.getElementById('video-title');
     if (titleEl) titleEl.textContent = video.title;
+    document.title = `${video.title} | Ruh Al Tarikh`;
 
     if (DOM.transcriptPanel) DOM.transcriptPanel.setAttribute('aria-hidden', 'true');
     if (DOM.sharePanel) DOM.sharePanel.setAttribute('aria-hidden', 'true');
@@ -551,6 +553,7 @@ function closeVideo() {
     DOM.body.style.overflow = "";
     DOM.body.classList.remove("modal-open");
     AppState.current = null;
+    document.title = "Ruh Al Tarikh | Cinematic Islamic Archive";
     clearInterval(AppState.progressTimer);
     renderContinueWatching();
     if (AppState.lastFocused) { AppState.lastFocused.focus(); AppState.lastFocused = null; }
@@ -1013,6 +1016,24 @@ function bindEvents() {
         });
     }
 
+    // Navbar Brand Logo - Scroll to Top
+    if (DOM.navbarBrand) {
+        DOM.navbarBrand.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+        // Handle keyboard trigger
+        DOM.navbarBrand.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                DOM.navbarBrand.click();
+            }
+        });
+    }
+
     // Search Section Toggle
     if (DOM.searchToggle && DOM.searchSection) {
         DOM.searchToggle.addEventListener('click', () => {
@@ -1033,83 +1054,6 @@ function bindEvents() {
     });
 
     // Hero buttons
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
     // Navbar Episodes Scroll
     if (DOM.episodesNavBtn && DOM.episodesSection) {
         DOM.episodesNavBtn.addEventListener('click', () => {
@@ -1326,6 +1270,12 @@ function bindEvents() {
             } else if (key === 'b') {
                 e.preventDefault();
                 toggleWatchLater(AppState.current);
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
             }
         }
 
