@@ -553,7 +553,7 @@ function closeVideo() {
     DOM.body.style.overflow = "";
     DOM.body.classList.remove("modal-open");
     AppState.current = null;
-    document.title = "Ruh Al Tarikh | Cinematic Islamic Archive";
+    document.title = 'Ruh Al Tarikh | Cinematic Islamic Archive';
     clearInterval(AppState.progressTimer);
     renderContinueWatching();
     if (AppState.lastFocused) { AppState.lastFocused.focus(); AppState.lastFocused = null; }
@@ -842,7 +842,7 @@ function renderProjects() {
 
     if (AppState.currentView === 'list') {
         projectsList.className = 'studio-projects-grid';
-        projectsList.innerHTML = projects.map(project => `
+        projectsList.innerHTML = projects.map(e => `
             <div class="project-card">
                 <div class="project-card-header">
                     <span class="status-badge ${e.status.toLowerCase()}">${e.status}</span>
@@ -857,7 +857,12 @@ function renderProjects() {
                     <button class="secondary-button small resume-project-btn" data-id="${e.id}">Resume</button>
                 </div>
             </div>
-        `).join("")):(e.className="kanban-grid",e.innerHTML=["Research","Writing","Editing","Published"].map(t=>{var e=o.filter(e=>e.status===t||"Research"===t&&"Researching"===e.status);return`
+        `).join("");
+    } else {
+        projectsList.className = "kanban-grid";
+        projectsList.innerHTML = ["Research", "Writing", "Editing", "Published"].map(t => {
+            var e = projects.filter(e => e.status === t || ("Research" === t && "Researching" === e.status));
+            return `
                 <div class="kanban-column">
                     <h3>${t} <span class="kanban-count">${e.length}</span></h3>
                     <div class="kanban-cards">
@@ -875,13 +880,18 @@ function renderProjects() {
                         `).join("")}
                     </div>
                 </div>
-            `}).join("")),e.querySelectorAll(".resume-project-btn").forEach(e=>{e.addEventListener("click",e=>{let t=e.currentTarget.dataset.id;var a,e=o.find(e=>e.id===t);e&&(DOM.studioViews&&DOM.studioViews.forEach(e=>e.style.display="none"),DOM.activeProjectView&&(DOM.activeProjectView.style.display="block"),(a=document.getElementById("current-project-title"))&&(a.textContent=e.title),updateBreadcrumbs("Studio > Projects > "+e.title),DOM.projectTabBtns)&&DOM.projectTabBtns[0]&&DOM.projectTabBtns[0].click()})})}}function initSearch(){var e;DOM.search&&(DOM.search.addEventListener("input",e=>{AppState.search=e.target.value,AppState.page=0,DOM.clearSearch&&(DOM.clearSearch.style.display=AppState.search?"block":"none"),clearTimeout(AppState.debounceTimer),AppState.debounceTimer=setTimeout(()=>{renderGrid()},250)}),DOM.clearSearch&&DOM.clearSearch.addEventListener("click",()=>{DOM.search&&(DOM.search.value=""),AppState.search="",AppState.page=0,DOM.clearSearch&&(DOM.clearSearch.style.display="none"),renderGrid()}),(e=document.querySelector(".filter-chips"))&&e.addEventListener("click",e=>{e=e.target.closest(".chip");if(e){let t=e.dataset.cat;"all"===t?AppState.categories=["all"]:(AppState.categories=AppState.categories.filter(e=>"all"!==e),AppState.categories.includes(t)?(AppState.categories=AppState.categories.filter(e=>e!==t),0===AppState.categories.length&&(AppState.categories=["all"])):AppState.categories.push(t)),document.querySelectorAll(".chip").forEach(e=>{var t=AppState.categories.includes(e.dataset.cat);e.classList.toggle("active",t),e.setAttribute("aria-pressed",t?"true":"false")}),AppState.page=0,renderGrid()}}),DOM.clearFilters)&&DOM.clearFilters.addEventListener("click",()=>{AppState.categories=["all"],document.querySelectorAll(".chip").forEach(e=>{"all"===e.dataset.cat?e.classList.add("active"):e.classList.remove("active")}),AppState.page=0,renderGrid()})}async function init(){try{initMonitoring();var e=Utils.getLS(CONFIG.STORAGE.THEME_KEY),t=(e&&setTheme(e),AppState.watchLater=Utils.getLS(CONFIG.STORAGE.WATCH_LATER_KEY,[]),AppState.progress=Utils.getLS(CONFIG.STORAGE.PROGRESS_KEY,{}),Utils.getLS(CONFIG.STORAGE.CHANNEL_KEY));if(DOM.channelInput&&(DOM.channelInput.value=t||""),DOM.grid&&(DOM.grid.innerHTML=Array(CONFIG.UI.ITEMS_PER_PAGE).fill(0).map(()=>`
-                <div class="skeleton-card">
-                    <div class="skeleton skeleton-thumb"></div>
-                    <div class="skeleton skeleton-title"></div>
-                    <div class="skeleton skeleton-meta"></div>
-                </div>
-            `).join("")),AppState.videos=await loadVideos(),AppState.videos.sort((e,t)=>new Date(t.publishedAt)-new Date(e.publishedAt)),0===AppState.videos.length)throw new Error("No videos available in the archive.");AppState.hero=AppState.videos[0],renderHero(AppState.hero),renderGrid(),renderContinueWatching(),updateStats();var a,o,s=await fetchYouTubeChannelData();s&&(console.log("Channel Stats:",s),a=document.getElementById("channel-stats"))&&(a.innerHTML=`
+            `}).join(""));
+        projectsList.querySelectorAll(".resume-project-btn").forEach(e => {
+            e.addEventListener("click", e => {
+                let t = e.currentTarget.dataset.id;
+                var a, e = projects.find(e => e.id === t);
+                e && (DOM.studioViews && DOM.studioViews.forEach(e => e.style.display = "none"), DOM.activeProjectView && (DOM.activeProjectView.style.display = "block"), (a = document.getElementById("current-project-title")) && (a.textContent = e.title), updateBreadcrumbs("Studio > Projects > " + e.title), DOM.projectTabBtns) && DOM.projectTabBtns[0] && DOM.projectTabBtns[0].click()
+            })
+        })
+    }
+}
+
+AppState.hero=AppState.videos[0],renderHero(AppState.hero),renderGrid(),renderContinueWatching(),updateStats();var a,o,s=await fetchYouTubeChannelData();s&&(console.log("Channel Stats:",s),a=document.getElementById("channel-stats"))&&(a.innerHTML=`
                     <span>📺 ${s.subscribers?.toLocaleString()} subscribers</span>
                     <span>👁️ ${s.views?.toLocaleString()} views</span>
                     <span>🎬 ${s.videos} videos</span>
@@ -1034,26 +1044,6 @@ function bindEvents() {
         });
     }
 
-    // Search Section Toggle
-    if (DOM.searchToggle && DOM.searchSection) {
-        DOM.searchToggle.addEventListener('click', () => {
-            const isActive = DOM.searchSection.classList.toggle('active');
-            DOM.searchToggle.setAttribute('aria-expanded', isActive ? 'true' : 'false');
-            if (isActive) {
-                DOM.search.focus();
-            }
-        });
-    }
-
-    document.querySelectorAll('.theme-opt').forEach(btn => {
-        btn.addEventListener('click', () => {
-            setTheme(btn.dataset.theme);
-            const menu = document.getElementById('themeMenu');
-            if (menu) menu.classList.add('hidden');
-        });
-    });
-
-    // Hero buttons
     // Navbar Episodes Scroll
     if (DOM.episodesNavBtn && DOM.episodesSection) {
         DOM.episodesNavBtn.addEventListener('click', () => {
@@ -1299,6 +1289,12 @@ function bindEvents() {
         if (key === 'b') {
             if (AppState.current) {
                 toggleWatchLater(AppState.current);
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
             } else if (DOM.watchLaterPage) {
                 if (DOM.watchLaterPage.style.display === 'block') {
                     closeWatchLater();
