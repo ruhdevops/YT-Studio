@@ -64,6 +64,10 @@ const CATEGORIES = [
 const DOM = {
     // Core elements
     body: document.body,
+    navbarBrand: document.getElementById('navbarBrand'),
+    navbarBrand: document.getElementById('navbarBrand'),
+    navbarBrand: document.getElementById('navbarBrand'),
+    navbarBrand: document.getElementById('navbarBrand'),
     grid: document.getElementById('grid'),
     modal: document.getElementById('modal'),
     modalSaveBtn: document.getElementById('modalSaveBtn'),
@@ -486,28 +490,7 @@ function renderCard(video, index = 0) {
                         </div>
                     </div>
                 </div>
-            `}).join(""),lazyLoadImages()):DOM.watchLaterContainer.innerHTML='<div class="empty-state">No episodes saved yet. Click the bookmark icon on any episode to save it.</div>')}function renderDashboard(){if(DOM.dashboardModal){if(DOM.dashTotal&&(DOM.dashTotal.textContent=AppState.videos.length),DOM.dashSaved&&(DOM.dashSaved.textContent=AppState.watchLater.length),DOM.dashProgress&&(DOM.dashProgress.textContent=Object.keys(AppState.progress).length),DOM.dashHours&&(DOM.dashHours.textContent=(.5*AppState.videos.length).toFixed(1)+"h"),DOM.dashCategories&&AppState.videos.length){let t={};AppState.videos.forEach(e=>{t[e.category]=(t[e.category]||0)+1}),DOM.dashCategories.innerHTML=Object.entries(t).sort((e,t)=>t[1]-e[1]).map(([e,t])=>`<div class="dashboard-list-row"><span>${getCategoryLabel(e)}</span><strong>${t}</strong></div>`).join("")}DOM.dashResumeList&&(DOM.dashResumeList.innerHTML=AppState.watchLater.length?AppState.watchLater.slice(0,5).map(e=>`
-                <div class="dashboard-list-row">
-                    <span>${Utils.sanitize(Utils.truncate(e.title,40))}</span>
-                    <strong>${getCategoryLabel(e.category)}</strong>
-                </div>
-            `).join(""):'<p style="color:var(--text-soft)">No saved episodes.</p>')}}function updateStats(){DOM.statTotal&&(DOM.statTotal.textContent=AppState.videos.length),DOM.statSaved&&(DOM.statSaved.textContent=AppState.watchLater.length),DOM.statProgress&&(DOM.statProgress.textContent=Object.keys(AppState.progress).length),DOM.watchLaterCount&&(DOM.watchLaterCount.textContent=AppState.watchLater.length),DOM.watchLaterBadge&&DOM.watchLaterBadge.setAttribute("aria-label",`Open watch later list (${AppState.watchLater.length} episodes)`)}function openVideo(e){var t;DOM.modal&&DOM.player&&(t=getProgress((AppState.current=e).id)?.time||0,DOM.player.src=`https://www.youtube.com/embed/${e.id}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1&start=`+Math.floor(t),DOM.modal.style.display="flex",DOM.modal.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.modal),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"),(t=document.getElementById("video-title"))&&(t.textContent=e.title),DOM.transcriptPanel&&DOM.transcriptPanel.setAttribute("aria-hidden","true"),DOM.sharePanel)&&DOM.sharePanel.setAttribute("aria-hidden","true")}function closeVideo(){DOM.modal&&DOM.player&&(DOM.player.src="",DOM.modal.style.display="none",DOM.modal.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.current=null,clearInterval(AppState.progressTimer),renderContinueWatching(),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}function navigateVideo(t){if(AppState.current&&AppState.filtered.length){var a=AppState.filtered.findIndex(e=>e.id===AppState.current.id);if(-1!==a){let e=a+t;(e=e<0?AppState.filtered.length-1:e)>=AppState.filtered.length&&(e=0),openVideo(AppState.filtered[e])}}}function toggleWatchLater(t){var e=AppState.watchLater.findIndex(e=>e.id===t.id);-1===e?(AppState.watchLater.push(t),Utils.showToast("Added to Watch Later")):(AppState.watchLater.splice(e,1),Utils.showToast("Removed from Watch Later")),Utils.saveLS(CONFIG.STORAGE.WATCH_LATER_KEY,AppState.watchLater),updateStats(),AppState.hero&&AppState.hero.id===t.id&&renderHero(AppState.hero),renderGrid(),DOM.watchLaterContainer&&renderWatchLater()}function openWatchLater(){DOM.watchLaterPage&&(renderWatchLater(),DOM.watchLaterPage.style.display="block",DOM.watchLaterPage.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.watchLaterPage),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"))}function closeWatchLater(){DOM.watchLaterPage&&(DOM.watchLaterPage.style.display="none",DOM.watchLaterPage.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}let initAnalyticsChart=async()=>{var e=document.getElementById("analyticsChart");e&&(window.Chart||await new Promise(e=>{var t=document.createElement("script");t.src="https://cdn.jsdelivr.net/npm/chart.js",t.onload=e,document.head.appendChild(t)}),e=e.getContext("2d"),window.myChart&&window.myChart.destroy(),window.myChart=new Chart(e,{type:"line",data:{labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],datasets:[{label:"Subscriber Growth",data:[12,19,3,5,2,3,9],borderColor:"#e50914",backgroundColor:"rgba(229, 9, 20, 0.1)",fill:!0,tension:.4}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{display:!1}},scales:{y:{display:!1},x:{grid:{display:!1},ticks:{color:"#808080",font:{size:10}}}}}}))},initAIAssistant=()=>{var e;if(isFeatureEnabled("AI_ASSISTANT")){let s=document.getElementById("ai-score-title"),a=document.getElementById("ai-generate-hook"),o=document.getElementById("ai-title-input");s&&s.addEventListener("click",()=>{o.value.trim()?(s.disabled=!0,s.innerHTML='<i class="fas fa-spinner fa-spin"></i>',setTimeout(()=>{var e=Math.floor(30*Math.random()+65),t=document.getElementById("ai-score-result"),a=document.getElementById("ai-score-value"),o=document.getElementById("ai-score-bar");t.classList.remove("hidden"),a.textContent=e+"/100",o.style.width=e+"%",s.disabled=!1,s.textContent="Score",Utils.showToast("Title analyzed!","success")},1e3)):Utils.showToast("Please enter a title","warning")}),a&&a.addEventListener("click",()=>{a.disabled=!0,a.innerHTML='<i class="fas fa-spinner fa-spin"></i> Analyzing...';let t=["What if everything you knew about the fall of Andalusia was wrong?","Behind the silence of history lies a truth far more cinematic than fiction.","The year was 1492. The world was changing. And at the center of it all?","How did one decision change the course of human history forever?"];setTimeout(()=>{var e=document.getElementById("ai-hook-result");e.classList.remove("hidden"),e.textContent=t[Math.floor(Math.random()*t.length)],a.disabled=!1,a.innerHTML='<i class="fas fa-bolt mr-2 text-primary"></i> Generate Viral Hook',Utils.showToast("Hook generated!","success")},1200)}),document.querySelectorAll("#ai-topics span").forEach(t=>{t.addEventListener("click",()=>{var e=t.textContent;o&&(o.value=e,Utils.showToast("Selected: "+e,"info"))}),t.addEventListener("keydown",e=>{"Enter"!==e.key&&" "!==e.key||(e.preventDefault(),t.click())})})}else(e=document.getElementById("ai-assistant-panel"))&&(e.style.display="none")};function openDashboard(){DOM.dashboardModal&&(renderDashboard(),initAnalyticsChart(),initAIAssistant(),DOM.dashboardModal.style.display="block",DOM.dashboardModal.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.dashboardModal),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"))}function closeDashboard(){DOM.dashboardModal&&(DOM.dashboardModal.style.display="none",DOM.dashboardModal.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}function setTheme(t){AppState.theme=t,Utils.saveLS(CONFIG.STORAGE.THEME_KEY,t),DOM.body.classList.remove("light-mode","theme-neon"),"light"===t?DOM.body.classList.add("light-mode"):"neon"===t&&DOM.body.classList.add("theme-neon");var e=DOM.themeToggle?.querySelector("i");e&&(e.className="dark"===t?"fa-regular fa-moon":"neon"===t?"fa-solid fa-bolt":"fa-regular fa-sun"),document.querySelectorAll(".theme-opt").forEach(e=>{e.classList.toggle("active",e.dataset.theme===t)})}function toggleTheme(){setTheme("dark"===AppState.theme?"light":"dark")}function switchMode(e){"creator"===e?(DOM.studioRoot&&(DOM.studioRoot.style.display="block"),DOM.appRoot&&(DOM.appRoot.style.display="none"),DOM.heroSection&&(DOM.heroSection.style.display="none"),DOM.continueBlockSec&&(DOM.continueBlockSec.style.display="none"),updateBreadcrumbs("Studio > Projects")):(DOM.studioRoot&&(DOM.studioRoot.style.display="none"),DOM.appRoot&&(DOM.appRoot.style.display="block"),DOM.heroSection&&(DOM.heroSection.style.display="block"),DOM.continueBlockSec&&AppState.videos.some(e=>getProgress(e.id))&&(DOM.continueBlockSec.style.display="block"))}function updateBreadcrumbs(e){if(DOM.studioBreadcrumbs){let a=e.split(" > ");DOM.studioBreadcrumbs.innerHTML=a.map((e,t)=>t===a.length-1?`<span class="current">${e}</span>`:`<span>${e}</span>`).join(' <i class="fa-solid fa-chevron-right" style="font-size:0.7rem; margin:0 8px; opacity:0.5;"></i> ')}}function renderProjects(){var e=document.getElementById("studioProjectsList");if(e){let o=Utils.getLS(CONFIG.STORAGE.PROJECTS_KEY,[{id:"p1",title:"The Fall of the Abbasids",status:"Writing",progress:65,date:"2024-05-10"},{id:"p2",title:"Prophecy & Modernity",status:"Researching",progress:30,date:"2024-05-12"},{id:"p3",title:"The Silent Silk Road",status:"Editing",progress:90,date:"2024-05-08"},{id:"p4",title:"The Golden Age",status:"Published",progress:100,date:"2024-05-01"}]);"list"===AppState.currentView?(e.className="studio-projects-grid",e.innerHTML=o.map(e=>`
-            `).join('')
-            : '<p style="color:var(--text-soft)">No saved episodes.</p>';
-    }
-}
-
-function updateStats() {
-    if (DOM.statTotal) DOM.statTotal.textContent = AppState.videos.length;
-    if (DOM.statSaved) DOM.statSaved.textContent = AppState.watchLater.length;
-    if (DOM.statProgress) DOM.statProgress.textContent = Object.keys(AppState.progress).length;
-    if (DOM.watchLaterCount) DOM.watchLaterCount.textContent = AppState.watchLater.length;
-    if (DOM.watchLaterBadge) {
-        DOM.watchLaterBadge.setAttribute('aria-label', `Open watch later list (${AppState.watchLater.length} episodes)`);
-    }
-}
-
-// ============================================
+            `}).join(""),lazyLoadImages()):DOM.watchLaterContainer.innerHTML='<div class="empty-state">No episodes saved yet. Click the bookmark icon on any episode to save it.</div>')}// ============================================
 // VIDEO PLAYER FUNCTIONS
 // ============================================
 function openVideo(video) {
@@ -527,6 +510,10 @@ function openVideo(video) {
 
     const titleEl = document.getElementById('video-title');
     if (titleEl) titleEl.textContent = video.title;
+    document.title = `${video.title} | Ruh Al Tarikh`;
+    document.title = `${video.title} | Ruh Al Tarikh`;
+    document.title = `${video.title} | Ruh Al Tarikh`;
+    document.title = `${video.title} | Ruh Al Tarikh`;
 
     if (DOM.transcriptPanel) DOM.transcriptPanel.setAttribute('aria-hidden', 'true');
     if (DOM.sharePanel) DOM.sharePanel.setAttribute('aria-hidden', 'true');
@@ -551,6 +538,10 @@ function closeVideo() {
     DOM.body.style.overflow = "";
     DOM.body.classList.remove("modal-open");
     AppState.current = null;
+    document.title = 'Ruh Al Tarikh | Cinematic Islamic Archive';
+    document.title = 'Ruh Al Tarikh | Cinematic Islamic Archive';
+    document.title = 'Ruh Al Tarikh | Cinematic Islamic Archive';
+    document.title = 'Ruh Al Tarikh | Cinematic Islamic Archive';
     clearInterval(AppState.progressTimer);
     renderContinueWatching();
     if (AppState.lastFocused) { AppState.lastFocused.focus(); AppState.lastFocused = null; }
@@ -839,7 +830,7 @@ function renderProjects() {
 
     if (AppState.currentView === 'list') {
         projectsList.className = 'studio-projects-grid';
-        projectsList.innerHTML = projects.map(project => `
+        projectsList.innerHTML = projects.map(e => `
             <div class="project-card">
                 <div class="project-card-header">
                     <span class="status-badge ${e.status.toLowerCase()}">${e.status}</span>
@@ -854,93 +845,47 @@ function renderProjects() {
                     <button class="secondary-button small resume-project-btn" data-id="${e.id}">Resume</button>
                 </div>
             </div>
-        `).join("")):(e.className="kanban-grid",e.innerHTML=["Research","Writing","Editing","Published"].map(t=>{var e=o.filter(e=>e.status===t||"Research"===t&&"Researching"===e.status);return`
+        `).join("");
+    } else {
+        projectsList.className = "kanban-grid";
+        projectsList.innerHTML = ["Research", "Writing", "Editing", "Published"].map(t => {
+            const filtered = projects.filter(p => p.status === t || (t === "Research" && p.status === "Researching"));
+            return `
                 <div class="kanban-column">
-                    <h3>${t} <span class="kanban-count">${e.length}</span></h3>
+                    <h3>${t} <span class="kanban-count">${filtered.length}</span></h3>
                     <div class="kanban-cards">
-                        ${e.map(e=>`
-                            <div class="kanban-card resume-project-btn" data-id="${e.id}">
-                                <h4 class="text-sm font-bold mb-2">${e.title}</h4>
+                        ${filtered.map(p => `
+                            <div class="kanban-card resume-project-btn" data-id="${p.id}">
+                                <h4 class="text-sm font-bold mb-2">${p.title}</h4>
                                 <div class="project-progress-container" style="height:4px;">
-                                    <div class="project-progress-bar" style="width: ${e.progress}%"></div>
+                                    <div class="project-progress-bar" style="width: ${p.progress}%"></div>
                                 </div>
                                 <div class="flex justify-between items-center mt-2 text-xs text-soft">
-                                    <span>${e.progress}%</span>
-                                    <span>${e.date}</span>
+                                    <span>${p.progress}%</span>
+                                    <span>${p.date}</span>
                                 </div>
                             </div>
                         `).join("")}
                     </div>
                 </div>
-            `}).join("")),e.querySelectorAll(".resume-project-btn").forEach(e=>{e.addEventListener("click",e=>{let t=e.currentTarget.dataset.id;var a,e=o.find(e=>e.id===t);e&&(DOM.studioViews&&DOM.studioViews.forEach(e=>e.style.display="none"),DOM.activeProjectView&&(DOM.activeProjectView.style.display="block"),(a=document.getElementById("current-project-title"))&&(a.textContent=e.title),updateBreadcrumbs("Studio > Projects > "+e.title),DOM.projectTabBtns)&&DOM.projectTabBtns[0]&&DOM.projectTabBtns[0].click()})})}}function initSearch(){var e;DOM.search&&(DOM.search.addEventListener("input",e=>{AppState.search=e.target.value,AppState.page=0,DOM.clearSearch&&(DOM.clearSearch.style.display=AppState.search?"block":"none"),clearTimeout(AppState.debounceTimer),AppState.debounceTimer=setTimeout(()=>{renderGrid()},250)}),DOM.clearSearch&&DOM.clearSearch.addEventListener("click",()=>{DOM.search&&(DOM.search.value=""),AppState.search="",AppState.page=0,DOM.clearSearch&&(DOM.clearSearch.style.display="none"),renderGrid()}),(e=document.querySelector(".filter-chips"))&&e.addEventListener("click",e=>{e=e.target.closest(".chip");if(e){let t=e.dataset.cat;"all"===t?AppState.categories=["all"]:(AppState.categories=AppState.categories.filter(e=>"all"!==e),AppState.categories.includes(t)?(AppState.categories=AppState.categories.filter(e=>e!==t),0===AppState.categories.length&&(AppState.categories=["all"])):AppState.categories.push(t)),document.querySelectorAll(".chip").forEach(e=>{var t=AppState.categories.includes(e.dataset.cat);e.classList.toggle("active",t),e.setAttribute("aria-pressed",t?"true":"false")}),AppState.page=0,renderGrid()}}),DOM.clearFilters)&&DOM.clearFilters.addEventListener("click",()=>{AppState.categories=["all"],document.querySelectorAll(".chip").forEach(e=>{"all"===e.dataset.cat?e.classList.add("active"):e.classList.remove("active")}),AppState.page=0,renderGrid()})}async function init(){try{initMonitoring();var e=Utils.getLS(CONFIG.STORAGE.THEME_KEY),t=(e&&setTheme(e),AppState.watchLater=Utils.getLS(CONFIG.STORAGE.WATCH_LATER_KEY,[]),AppState.progress=Utils.getLS(CONFIG.STORAGE.PROGRESS_KEY,{}),Utils.getLS(CONFIG.STORAGE.CHANNEL_KEY));if(DOM.channelInput&&(DOM.channelInput.value=t||""),DOM.grid&&(DOM.grid.innerHTML=Array(CONFIG.UI.ITEMS_PER_PAGE).fill(0).map(()=>`
-                <div class="skeleton-card">
-                    <div class="skeleton skeleton-thumb"></div>
-                    <div class="skeleton skeleton-title"></div>
-                    <div class="skeleton skeleton-meta"></div>
-                </div>
-            `).join("")),AppState.videos=await loadVideos(),AppState.videos.sort((e,t)=>new Date(t.publishedAt)-new Date(e.publishedAt)),0===AppState.videos.length)throw new Error("No videos available in the archive.");AppState.hero=AppState.videos[0],renderHero(AppState.hero),renderGrid(),renderContinueWatching(),updateStats();var a,o,s=await fetchYouTubeChannelData();s&&(console.log("Channel Stats:",s),a=document.getElementById("channel-stats"))&&(a.innerHTML=`
-                    <span>📺 ${s.subscribers?.toLocaleString()} subscribers</span>
-                    <span>👁️ ${s.views?.toLocaleString()} views</span>
-                    <span>🎬 ${s.videos} videos</span>
-                `),Utils.getLS("yt_studio_demo_loaded_v2")||(o=[{id:"demo-1",title:"The Lost Library of Timbuktu",status:"Writing",progress:45,date:(new Date).toLocaleDateString()},{id:"demo-2",title:"Secrets of the Ottoman Archives",status:"Researching",progress:20,date:(new Date).toLocaleDateString()}],Utils.saveLS(CONFIG.STORAGE.PROJECTS_KEY,o),localStorage.setItem("yt_studio_demo_loaded_v2","true"),Utils.showToast("Demo data preloaded!")),renderProjects(),setupRecommendedSection()}catch(e){console.error("Init Error:",e),DOM.error&&(DOM.error.style.display="block"),DOM.errorMsg&&(DOM.errorMsg.textContent=e.message||"Connection failed. Please try again.")}finally{DOM.loading&&(DOM.loading.style.display="none")}}function setupRecommendedSection(){if(DOM.recommendedRow){let o=Object.keys(AppState.progress).map(t=>AppState.videos.find(e=>e.id===t)).filter(Boolean),t=[];if(0===o.length)t=AppState.videos.slice(4,8);else{let a={},e=(o.forEach(e=>{a[e.category]=(a[e.category]||0)+1}),Object.keys(a).sort((e,t)=>a[t]-a[e])[0]);var s;(t=AppState.videos.filter(t=>t.category===e&&!o.some(e=>e.id===t.id)).slice(0,4)).length<4&&(s=AppState.videos.filter(t=>t.category!==e&&!o.some(e=>e.id===t.id)).slice(0,4-t.length),t.push(...s))}t.length&&(DOM.recommendedBlockSec&&(DOM.recommendedBlockSec.style.display="block"),DOM.recommendedRow.innerHTML=t.map((e,t)=>renderCard(e,t)).join(""),lazyLoadImages())}}function bindEvents(){DOM.themeToggle&&DOM.themeToggle.addEventListener("click",toggleTheme),DOM.menuToggle&&DOM.menuToggle.addEventListener("click",()=>{document.body.classList.toggle("mobile-nav-active")}),DOM.searchToggle&&DOM.searchSection&&DOM.searchToggle.addEventListener("click",()=>{DOM.searchSection.classList.toggle("active"),DOM.searchSection.classList.contains("active")&&DOM.search.focus()}),document.querySelectorAll(".theme-opt").forEach(t=>{t.addEventListener("click",()=>{setTheme(t.dataset.theme);var e=document.getElementById("themeMenu");e&&e.classList.add("hidden")})}),DOM.heroBtn&&DOM.heroBtn.addEventListener("click",()=>AppState.hero&&openVideo(AppState.hero)),DOM.heroSave&&DOM.heroSave.addEventListener("click",()=>AppState.hero&&toggleWatchLater(AppState.hero)),DOM.closeModal&&DOM.closeModal.addEventListener("click",closeVideo),DOM.modal&&DOM.modal.addEventListener("click",e=>{e.target===DOM.modal&&closeVideo()}),DOM.grid&&(DOM.grid.addEventListener("click",e=>{let t=e.target.closest(".watch-later-btn");var a;if(t)e.stopPropagation(),(a=AppState.videos.find(e=>e.id===t.dataset.id))&&toggleWatchLater(a);else{let t=e.target.closest(".card");t&&(a=AppState.videos.find(e=>e.id===t.dataset.id))&&openVideo(a)}}),DOM.grid.addEventListener("keydown",e=>{if("Enter"===e.key||" "===e.key){let t=e.target.closest(".card");t&&(e.preventDefault(),e=AppState.videos.find(e=>e.id===t.dataset.id))&&openVideo(e)}})),DOM.loadMore&&DOM.loadMore.addEventListener("click",()=>{AppState.page++,renderGrid()}),DOM.watchLaterBadge&&DOM.watchLaterBadge.addEventListener("click",openWatchLater),DOM.closeWatchLater&&DOM.closeWatchLater.addEventListener("click",closeWatchLater),DOM.watchLaterPage&&DOM.watchLaterPage.addEventListener("click",e=>{e.target===DOM.watchLaterPage&&closeWatchLater();let t=e.target.closest(".watch-later-btn");var a;if(t)e.stopPropagation(),(a=AppState.watchLater.find(e=>e.id===t.dataset.id))&&toggleWatchLater(a);else{let t=e.target.closest(".card");t&&(a=AppState.watchLater.find(e=>e.id===t.dataset.id))&&(closeWatchLater(),openVideo(a))}}),DOM.dashboardBtn&&DOM.dashboardBtn.addEventListener("click",openDashboard),DOM.closeDashboard&&DOM.closeDashboard.addEventListener("click",closeDashboard),DOM.closeShare&&DOM.closeShare.addEventListener("click",()=>{DOM.sharePanel.style.display="none",DOM.sharePanel.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.lastFocused&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}),DOM.closeTranscript&&DOM.closeTranscript.addEventListener("click",()=>{DOM.transcriptPanel.style.display="none",DOM.transcriptPanel.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.lastFocused&&(AppState.lastFocused.focus(),AppState.lastFocused=null)});var e=document.getElementById("shareEpisode"),e=(e&&e.addEventListener("click",openShare),document.getElementById("toggleTranscript")),e=(e&&e.addEventListener("click",openTranscript),document.getElementById("copyLinkBtn"));e&&e.addEventListener("click",e=>{var t=document.getElementById("shareLink");t&&Utils.copyToClipboard(t.value,e.currentTarget)}),DOM.dashboardModal&&DOM.dashboardModal.addEventListener("click",e=>{e.target===DOM.dashboardModal&&closeDashboard()}),DOM.retryBtn&&DOM.retryBtn.addEventListener("click",()=>location.reload()),DOM.connectBtn&&DOM.connectBtn.addEventListener("click",()=>{var e=DOM.channelInput?.value.trim();e?(localStorage.setItem(CONFIG.STORAGE.CHANNEL_KEY,e),localStorage.removeItem(CONFIG.STORAGE.CACHE_KEY),Utils.showToast("Channel ID saved! Reloading archives..."),setTimeout(()=>location.reload(),1500)):Utils.showToast("Please enter a valid Channel ID")}),DOM.scrollToTop&&(window.addEventListener("scroll",()=>{DOM.scrollToTop.classList.toggle("show",500<window.scrollY)}),DOM.scrollToTop.addEventListener("click",()=>{window.scrollTo({top:0,behavior:"smooth"})}));let t=document.querySelector(".header");t&&window.addEventListener("scroll",()=>{t.classList.toggle("scrolled",20<window.scrollY)}),document.addEventListener("keydown",e=>{var t;"INPUT"===e.target.tagName||"TEXTAREA"===e.target.tagName?"Escape"===e.key&&e.target.blur():("/"===(t=e.key.toLowerCase())&&DOM.search&&(e.preventDefault(),DOM.search.focus()),"escape"===t&&(closeVideo(),closeWatchLater(),closeDashboard(),DOM.sharePanel&&(DOM.sharePanel.style.display="none",DOM.sharePanel.setAttribute("aria-hidden","true")),DOM.transcriptPanel&&(DOM.transcriptPanel.style.display="none",DOM.transcriptPanel.setAttribute("aria-hidden","true")),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null),AppState.current&&("j"===t?(e.preventDefault(),navigateVideo(-1)):"k"===t&&(e.preventDefault(),navigateVideo(1))),"t"===t&&toggleTheme())}),document.addEventListener("mousemove",o=>{document.querySelectorAll(".card").forEach(e=>{var t=e.getBoundingClientRect(),a=(o.clientX-t.left)/t.width*100,t=(o.clientY-t.top)/t.height*100;e.style.setProperty("--mouse-x",a+"%"),e.style.setProperty("--mouse-y",t+"%")})}),DOM.modeBtns&&DOM.modeBtns.forEach(t=>{t.addEventListener("click",()=>{var e=t.dataset.mode;DOM.modeBtns.forEach(e=>{e.classList.remove("active"),e.setAttribute("aria-pressed","false")}),t.classList.add("active"),t.setAttribute("aria-pressed","true"),switchMode(e)})}),DOM.studioNavBtns&&DOM.studioNavBtns.forEach(a=>{a.addEventListener("click",()=>{DOM.studioNavBtns.forEach(e=>e.classList.remove("active")),a.classList.add("active"),a.setAttribute("aria-pressed","true");var e,t=a.dataset.tab;DOM.studioViews&&(DOM.studioViews.forEach(e=>e.style.display="none"),DOM.activeProjectView&&(DOM.activeProjectView.style.display="none"),(e=document.getElementById("studio-view-"+t))&&(e.style.display="block"),"islamic"===t&&initIslamic(),updateBreadcrumbs("Studio > "+(t.charAt(0).toUpperCase()+t.slice(1))))})}),DOM.newProjectBtn&&DOM.newProjectBtn.addEventListener("click",()=>{DOM.studioViews&&DOM.studioViews.forEach(e=>e.style.display="none"),DOM.activeProjectView&&(DOM.activeProjectView.style.display="block");var e=document.getElementById("current-project-title");e&&(e.textContent="New Untitled Video"),updateBreadcrumbs("Studio > Projects > New Untitled Video"),DOM.projectTabBtns&&DOM.projectTabBtns[0]&&DOM.projectTabBtns[0].click()}),DOM.backToProjectsBtn&&DOM.backToProjectsBtn.addEventListener("click",()=>{DOM.activeProjectView&&(DOM.activeProjectView.style.display="none"),DOM.studioViewProjects&&(DOM.studioViewProjects.style.display="block"),updateBreadcrumbs("Studio > Projects"),DOM.studioNavBtns&&DOM.studioNavBtns.forEach(e=>{e.classList.remove("active"),"projects"===e.dataset.tab&&e.classList.add("active"),e.setAttribute("aria-pressed","true")})}),DOM.projectTabBtns&&DOM.projectTabBtns.forEach(t=>{t.addEventListener("click",()=>{DOM.projectTabBtns.forEach(e=>e.classList.remove("active")),t.classList.add("active"),t.setAttribute("aria-pressed","true");var e=t.dataset.ptab;DOM.ptabContents&&(DOM.ptabContents.forEach(e=>e.classList.remove("active")),e=document.getElementById("ptab-"+e))&&e.classList.add("active")})})}let deferredPrompt,setupPWA=()=>{"serviceWorker"in navigator&&window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").then(e=>console.log("[PWA] Service Worker registered")).catch(e=>console.log("[PWA] Registration failed:",e))}),window.addEventListener("beforeinstallprompt",e=>{e.preventDefault(),deferredPrompt=e;let t=document.getElementById("installBtn");t&&(t.classList.remove("hidden"),t.addEventListener("click",async()=>{var e;deferredPrompt&&(deferredPrompt.prompt(),e=(await deferredPrompt.userChoice).outcome,console.log("[PWA] Install outcome: "+e),deferredPrompt=null,t.classList.add("hidden"))}))}),window.addEventListener("online",()=>{window.utils&&utils.showToast&&utils.showToast("Back online! Syncing data...","success"),document.body.classList.remove("offline-mode")}),window.addEventListener("offline",()=>{window.utils&&utils.showToast&&utils.showToast("You are offline. Some features may be limited.","warning"),document.body.classList.add("offline-mode")})};function openShare(){var e;DOM.sharePanel&&((e=document.getElementById("shareLink"))&&AppState.current&&(e.value="https://www.youtube.com/watch?v="+AppState.current.id),DOM.sharePanel.style.display="block",DOM.sharePanel.setAttribute("aria-hidden","false"),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"),Utils.trapFocus(DOM.sharePanel))}function openTranscript(){DOM.transcriptPanel&&(DOM.transcriptPanel.style.display="block",DOM.transcriptPanel.setAttribute("aria-hidden","false"),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"),Utils.trapFocus(DOM.transcriptPanel))}function initBottomSheetGestures(){document.querySelectorAll(".side-panel").forEach(a=>{let o=0,s=0;var e=a.querySelector(".panel-header");e&&(e.addEventListener("touchstart",e=>{o=e.touches[0].clientY},{passive:!0}),e.addEventListener("touchmove",e=>{e=(s=e.touches[0].clientY)-o;0<e&&(a.style.transform="translateY("+e+"px)")},{passive:!0}),e.addEventListener("touchend",e=>{var t;150<s-o&&("watchLaterPage"===(t=a.id)?closeWatchLater():"dashboardModal"===t?closeDashboard():"sharePanel"===t?DOM.closeShare.click():"transcriptPanel"===t&&DOM.closeTranscript.click()),a.style.transform="",o=0,s=0},{passive:!0}))})}function initPullToRefresh(){if(DOM.grid){let t=0,a=!1,o=document.createElement("div");o.className="pull-indicator",o.innerHTML='<i class="fas fa-sync fa-spin"></i>',document.body.prepend(o),window.addEventListener("touchstart",e=>{0===window.scrollY&&(t=e.touches[0].clientY,a=!0)},{passive:!0}),window.addEventListener("touchmove",e=>{a&&0<(e=e.touches[0].clientY-t)&&(o.style.opacity=Math.min(e/150,1),o.style.transform="translateY("+Math.min(e,150)+"px) rotate("+2*e+"deg)")},{passive:!0}),window.addEventListener("touchend",async e=>{a&&(150<e.changedTouches[0].clientY-t&&("vibrate"in navigator&&navigator.vibrate(50),Utils.showToast("Refreshing archives...","info"),o.classList.add("refreshing"),localStorage.removeItem(CONFIG.STORAGE.CACHE_KEY),AppState.videos=await loadVideos(),renderGrid(),"vibrate"in navigator&&navigator.vibrate([30,30,30]),Utils.showToast("Archives updated!","success")),o.style.opacity="0",o.style.transform="translateY(-100%)",o.classList.remove("refreshing"),a=!1)},{passive:!0})}}if("loading"===document.readyState?document.addEventListener("DOMContentLoaded",()=>{init(),bindEvents(),setupPWA(),initPullToRefresh(),initBottomSheetGestures(),document.body.addEventListener("touchstart",()=>{},{passive:!0})}):(init(),bindEvents(),setupPWA(),initPullToRefresh(),initBottomSheetGestures(),document.body.addEventListener("touchstart",()=>{},{passive:!0})),Utils.copyToClipboard){let a=Utils.copyToClipboard;Utils.copyToClipboard=async function(e,t){return"vibrate"in navigator&&navigator.vibrate(10),a.call(this,e,t)}}
-            `).join('');
-        }
-
-        // Load videos
-        AppState.videos = await loadVideos();
-        AppState.videos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-
-        if (AppState.videos.length === 0) {
-            throw new Error('No videos available in the archive.');
-        }
-
-        // Set hero
-        AppState.hero = AppState.videos[0];
-        renderHero(AppState.hero);
-
-        // Render grid
-        renderGrid();
-        renderContinueWatching();
-        updateStats();
-
-        // Fetch channel stats from Cloudflare Worker (optional)
-        const channelStats = await fetchYouTubeChannelData();
-        if (channelStats) {
-            console.log('Channel Stats:', channelStats);
-            // Update UI with channel stats if needed
-            const channelStatsEl = document.getElementById('channel-stats');
-            if (channelStatsEl) {
-                channelStatsEl.innerHTML = `
-                    <span>📺 ${channelStats.subscribers?.toLocaleString()} subscribers</span>
-                    <span>👁️ ${channelStats.views?.toLocaleString()} views</span>
-                    <span>🎬 ${channelStats.videos} videos</span>
-                `;
-            }
-        }
-
-        // Initialize projects
-        if (!Utils.getLS('yt_studio_demo_loaded_v2')) {
-            const demoProjects = [
-                { id: 'demo-1', title: 'The Lost Library of Timbuktu', status: 'Writing', progress: 45, date: new Date().toLocaleDateString() },
-                { id: 'demo-2', title: 'Secrets of the Ottoman Archives', status: 'Researching', progress: 20, date: new Date().toLocaleDateString() }
-            ];
-            Utils.saveLS(CONFIG.STORAGE.PROJECTS_KEY, demoProjects);
-            localStorage.setItem('yt_studio_demo_loaded_v2', 'true');
-            Utils.showToast('Demo data preloaded!');
-        }
-
-        renderProjects();
-
-        // Setup recommended section
-        setupRecommendedSection();
-
-    } catch (error) {
-        console.error('Init Error:', error);
-        if (DOM.error) DOM.error.style.display = 'block';
-        if (DOM.errorMsg) DOM.errorMsg.textContent = error.message || 'Connection failed. Please try again.';
-    } finally {
-        if (DOM.loading) DOM.loading.style.display = 'none';
+            `;
+        }).join("");
     }
+
+    projectsList.querySelectorAll(".resume-project-btn").forEach(btn => {
+        btn.addEventListener("click", e => {
+            let id = e.currentTarget.dataset.id;
+            const project = projects.find(p => p.id === id);
+            if (project) {
+                if (DOM.studioViews) DOM.studioViews.forEach(v => v.style.display = "none");
+                if (DOM.activeProjectView) DOM.activeProjectView.style.display = "block";
+                const titleEl = document.getElementById("current-project-title");
+                if (titleEl) titleEl.textContent = project.title;
+                updateBreadcrumbs("Studio > Projects > " + project.title);
+                if (DOM.projectTabBtns && DOM.projectTabBtns[0]) DOM.projectTabBtns[0].click();
+            }
+        });
+    });
 }
 
 function setupRecommendedSection() {
@@ -1005,7 +950,7 @@ function bindEvents() {
         });
     }
 
-    // Mobile Menu Toggle
+                // Mobile Menu Toggle
     if (DOM.menuToggle) {
         DOM.menuToggle.addEventListener('click', () => {
             const isActive = document.body.classList.toggle('mobile-nav-active');
@@ -1013,33 +958,20 @@ function bindEvents() {
         });
     }
 
-    // Search Section Toggle
-    if (DOM.searchToggle && DOM.searchSection) {
-        DOM.searchToggle.addEventListener('click', () => {
-            const isActive = DOM.searchSection.classList.toggle('active');
-            DOM.searchToggle.setAttribute('aria-expanded', isActive ? 'true' : 'false');
-            if (isActive) {
-                DOM.search.focus();
-            }
-        });
-    }
-
-    document.querySelectorAll('.theme-opt').forEach(btn => {
-        btn.addEventListener('click', () => {
-            setTheme(btn.dataset.theme);
-            const menu = document.getElementById('themeMenu');
-            if (menu) menu.classList.add('hidden');
-        });
-    });
-
-    // Hero buttons
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+    // Navbar Brand Logo - Scroll to Top
+    if (DOM.navbarBrand) {
+        DOM.navbarBrand.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             if (document.body.classList.contains('mobile-nav-active')) {
                 document.body.classList.remove('mobile-nav-active');
                 if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+        // Handle keyboard trigger
+        DOM.navbarBrand.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                DOM.navbarBrand.click();
             }
         });
     }
@@ -1055,73 +987,7 @@ function bindEvents() {
         });
     }
 
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    if (DOM.heroBtn) DOM.heroBtn.addEventListener('click', () => AppState.hero && openVideo(AppState.hero));
+if (DOM.heroBtn) DOM.heroBtn.addEventListener('click', () => AppState.hero && openVideo(AppState.hero));
     if (DOM.heroSave) DOM.heroSave.addEventListener('click', () => AppState.hero && toggleWatchLater(AppState.hero));
 
     // Modal close
@@ -1326,6 +1192,30 @@ function bindEvents() {
             } else if (key === 'b') {
                 e.preventDefault();
                 toggleWatchLater(AppState.current);
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
             }
         }
 
@@ -1349,6 +1239,30 @@ function bindEvents() {
         if (key === 'b') {
             if (AppState.current) {
                 toggleWatchLater(AppState.current);
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
             } else if (DOM.watchLaterPage) {
                 if (DOM.watchLaterPage.style.display === 'block') {
                     closeWatchLater();
