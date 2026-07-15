@@ -526,7 +526,10 @@ function openVideo(video) {
     DOM.body.classList.add('modal-open');
 
     const titleEl = document.getElementById('video-title');
-    if (titleEl) titleEl.textContent = video.title;
+    if (titleEl) {
+        titleEl.textContent = video.title;
+        document.title = `${video.title} | Ruh Al Tarikh`;
+    }
 
     if (DOM.transcriptPanel) DOM.transcriptPanel.setAttribute('aria-hidden', 'true');
     if (DOM.sharePanel) DOM.sharePanel.setAttribute('aria-hidden', 'true');
@@ -551,6 +554,7 @@ function closeVideo() {
     DOM.body.style.overflow = "";
     DOM.body.classList.remove("modal-open");
     AppState.current = null;
+    document.title = 'Ruh Al Tarikh | Cinematic Islamic Archive';
     clearInterval(AppState.progressTimer);
     renderContinueWatching();
     if (AppState.lastFocused) { AppState.lastFocused.focus(); AppState.lastFocused = null; }
@@ -1326,6 +1330,12 @@ function bindEvents() {
             } else if (key === 'b') {
                 e.preventDefault();
                 toggleWatchLater(AppState.current);
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
             }
         }
 
