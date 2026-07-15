@@ -64,6 +64,7 @@ const CATEGORIES = [
 const DOM = {
     // Core elements
     body: document.body,
+    navbarBrand: document.getElementById('navbarBrand'),
     grid: document.getElementById('grid'),
     modal: document.getElementById('modal'),
     modalSaveBtn: document.getElementById('modalSaveBtn'),
@@ -98,20 +99,6 @@ const DOM = {
     // Theme & UI
     themeToggle: document.getElementById('themeToggleBtn'),
     themeMenu: document.getElementById('themeMenu'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
     episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
     episodesSection: document.getElementById('episodesSection'),
     menuToggle: document.getElementById('menuToggleBtn'),
@@ -491,7 +478,7 @@ function renderCard(video, index = 0) {
                     <span>${Utils.sanitize(Utils.truncate(e.title,40))}</span>
                     <strong>${getCategoryLabel(e.category)}</strong>
                 </div>
-            `).join(""):'<p style="color:var(--text-soft)">No saved episodes.</p>')}}function updateStats(){DOM.statTotal&&(DOM.statTotal.textContent=AppState.videos.length),DOM.statSaved&&(DOM.statSaved.textContent=AppState.watchLater.length),DOM.statProgress&&(DOM.statProgress.textContent=Object.keys(AppState.progress).length),DOM.watchLaterCount&&(DOM.watchLaterCount.textContent=AppState.watchLater.length),DOM.watchLaterBadge&&DOM.watchLaterBadge.setAttribute("aria-label",`Open watch later list (${AppState.watchLater.length} episodes)`)}function openVideo(e){var t;DOM.modal&&DOM.player&&(t=getProgress((AppState.current=e).id)?.time||0,DOM.player.src=`https://www.youtube.com/embed/${e.id}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1&start=`+Math.floor(t),DOM.modal.style.display="flex",DOM.modal.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.modal),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"),(t=document.getElementById("video-title"))&&(t.textContent=e.title),DOM.transcriptPanel&&DOM.transcriptPanel.setAttribute("aria-hidden","true"),DOM.sharePanel)&&DOM.sharePanel.setAttribute("aria-hidden","true")}function closeVideo(){DOM.modal&&DOM.player&&(DOM.player.src="",DOM.modal.style.display="none",DOM.modal.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.current=null,clearInterval(AppState.progressTimer),renderContinueWatching(),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}function navigateVideo(t){if(AppState.current&&AppState.filtered.length){var a=AppState.filtered.findIndex(e=>e.id===AppState.current.id);if(-1!==a){let e=a+t;(e=e<0?AppState.filtered.length-1:e)>=AppState.filtered.length&&(e=0),openVideo(AppState.filtered[e])}}}function toggleWatchLater(t){var e=AppState.watchLater.findIndex(e=>e.id===t.id);-1===e?(AppState.watchLater.push(t),Utils.showToast("Added to Watch Later")):(AppState.watchLater.splice(e,1),Utils.showToast("Removed from Watch Later")),Utils.saveLS(CONFIG.STORAGE.WATCH_LATER_KEY,AppState.watchLater),updateStats(),AppState.hero&&AppState.hero.id===t.id&&renderHero(AppState.hero),renderGrid(),DOM.watchLaterContainer&&renderWatchLater()}function openWatchLater(){DOM.watchLaterPage&&(renderWatchLater(),DOM.watchLaterPage.style.display="block",DOM.watchLaterPage.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.watchLaterPage),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"))}function closeWatchLater(){DOM.watchLaterPage&&(DOM.watchLaterPage.style.display="none",DOM.watchLaterPage.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}let initAnalyticsChart=async()=>{var e=document.getElementById("analyticsChart");e&&(window.Chart||await new Promise(e=>{var t=document.createElement("script");t.src="https://cdn.jsdelivr.net/npm/chart.js",t.onload=e,document.head.appendChild(t)}),e=e.getContext("2d"),window.myChart&&window.myChart.destroy(),window.myChart=new Chart(e,{type:"line",data:{labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],datasets:[{label:"Subscriber Growth",data:[12,19,3,5,2,3,9],borderColor:"#e50914",backgroundColor:"rgba(229, 9, 20, 0.1)",fill:!0,tension:.4}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{display:!1}},scales:{y:{display:!1},x:{grid:{display:!1},ticks:{color:"#808080",font:{size:10}}}}}}))},initAIAssistant=()=>{var e;if(isFeatureEnabled("AI_ASSISTANT")){let s=document.getElementById("ai-score-title"),a=document.getElementById("ai-generate-hook"),o=document.getElementById("ai-title-input");s&&s.addEventListener("click",()=>{o.value.trim()?(s.disabled=!0,s.innerHTML='<i class="fas fa-spinner fa-spin"></i>',setTimeout(()=>{var e=Math.floor(30*Math.random()+65),t=document.getElementById("ai-score-result"),a=document.getElementById("ai-score-value"),o=document.getElementById("ai-score-bar");t.classList.remove("hidden"),a.textContent=e+"/100",o.style.width=e+"%",s.disabled=!1,s.textContent="Score",Utils.showToast("Title analyzed!","success")},1e3)):Utils.showToast("Please enter a title","warning")}),a&&a.addEventListener("click",()=>{a.disabled=!0,a.innerHTML='<i class="fas fa-spinner fa-spin"></i> Analyzing...';let t=["What if everything you knew about the fall of Andalusia was wrong?","Behind the silence of history lies a truth far more cinematic than fiction.","The year was 1492. The world was changing. And at the center of it all?","How did one decision change the course of human history forever?"];setTimeout(()=>{var e=document.getElementById("ai-hook-result");e.classList.remove("hidden"),e.textContent=t[Math.floor(Math.random()*t.length)],a.disabled=!1,a.innerHTML='<i class="fas fa-bolt mr-2 text-primary"></i> Generate Viral Hook',Utils.showToast("Hook generated!","success")},1200)}),document.querySelectorAll("#ai-topics span").forEach(t=>{t.addEventListener("click",()=>{var e=t.textContent;o&&(o.value=e,Utils.showToast("Selected: "+e,"info"))}),t.addEventListener("keydown",e=>{"Enter"!==e.key&&" "!==e.key||(e.preventDefault(),t.click())})})}else(e=document.getElementById("ai-assistant-panel"))&&(e.style.display="none")};function openDashboard(){DOM.dashboardModal&&(renderDashboard(),initAnalyticsChart(),initAIAssistant(),DOM.dashboardModal.style.display="block",DOM.dashboardModal.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.dashboardModal),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"))}function closeDashboard(){DOM.dashboardModal&&(DOM.dashboardModal.style.display="none",DOM.dashboardModal.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}function setTheme(t){AppState.theme=t,Utils.saveLS(CONFIG.STORAGE.THEME_KEY,t),DOM.body.classList.remove("light-mode","theme-neon"),"light"===t?DOM.body.classList.add("light-mode"):"neon"===t&&DOM.body.classList.add("theme-neon");var e=DOM.themeToggle?.querySelector("i");e&&(e.className="dark"===t?"fa-regular fa-moon":"neon"===t?"fa-solid fa-bolt":"fa-regular fa-sun"),document.querySelectorAll(".theme-opt").forEach(e=>{e.classList.toggle("active",e.dataset.theme===t)})}function toggleTheme(){setTheme("dark"===AppState.theme?"light":"dark")}function switchMode(e){"creator"===e?(DOM.studioRoot&&(DOM.studioRoot.style.display="block"),DOM.appRoot&&(DOM.appRoot.style.display="none"),DOM.heroSection&&(DOM.heroSection.style.display="none"),DOM.continueBlockSec&&(DOM.continueBlockSec.style.display="none"),updateBreadcrumbs("Studio > Projects")):(DOM.studioRoot&&(DOM.studioRoot.style.display="none"),DOM.appRoot&&(DOM.appRoot.style.display="block"),DOM.heroSection&&(DOM.heroSection.style.display="block"),DOM.continueBlockSec&&AppState.videos.some(e=>getProgress(e.id))&&(DOM.continueBlockSec.style.display="block"))}function updateBreadcrumbs(e){if(DOM.studioBreadcrumbs){let a=e.split(" > ");DOM.studioBreadcrumbs.innerHTML=a.map((e,t)=>t===a.length-1?`<span class="current">${e}</span>`:`<span>${e}</span>`).join(' <i class="fa-solid fa-chevron-right" style="font-size:0.7rem; margin:0 8px; opacity:0.5;"></i> ')}}function renderProjects(){var e=document.getElementById("studioProjectsList");if(e){let o=Utils.getLS(CONFIG.STORAGE.PROJECTS_KEY,[{id:"p1",title:"The Fall of the Abbasids",status:"Writing",progress:65,date:"2024-05-10"},{id:"p2",title:"Prophecy & Modernity",status:"Researching",progress:30,date:"2024-05-12"},{id:"p3",title:"The Silent Silk Road",status:"Editing",progress:90,date:"2024-05-08"},{id:"p4",title:"The Golden Age",status:"Published",progress:100,date:"2024-05-01"}]);"list"===AppState.currentView?(e.className="studio-projects-grid",e.innerHTML=o.map(e=>`
+            `).join(""):'<p style="color:var(--text-soft)">No saved episodes.</p>')}}function updateStats(){DOM.statTotal&&(DOM.statTotal.textContent=AppState.videos.length),DOM.statSaved&&(DOM.statSaved.textContent=AppState.watchLater.length),DOM.statProgress&&(DOM.statProgress.textContent=Object.keys(AppState.progress).length),DOM.watchLaterCount&&(DOM.watchLaterCount.textContent=AppState.watchLater.length),DOM.watchLaterBtn&&DOM.watchLaterBtn.setAttribute("aria-label",`View Saved Episodes (${AppState.watchLater.length} episode${AppState.watchLater.length!==1?"s":""})`)}function openVideo(e){var t;DOM.modal&&DOM.player&&(t=getProgress((AppState.current=e).id)?.time||0,DOM.player.src=`https://www.youtube.com/embed/${e.id}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1&start=`+Math.floor(t),DOM.modal.style.display="flex",DOM.modal.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.modal),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"),(t=document.getElementById("video-title"))&&(t.textContent=e.title),DOM.transcriptPanel&&DOM.transcriptPanel.setAttribute("aria-hidden","true"),DOM.sharePanel)&&DOM.sharePanel.setAttribute("aria-hidden","true")}function closeVideo(){DOM.modal&&DOM.player&&(DOM.player.src="",DOM.modal.style.display="none",DOM.modal.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.current=null,clearInterval(AppState.progressTimer),renderContinueWatching(),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}function navigateVideo(t){if(AppState.current&&AppState.filtered.length){var a=AppState.filtered.findIndex(e=>e.id===AppState.current.id);if(-1!==a){let e=a+t;(e=e<0?AppState.filtered.length-1:e)>=AppState.filtered.length&&(e=0),openVideo(AppState.filtered[e])}}}function toggleWatchLater(t){var e=AppState.watchLater.findIndex(e=>e.id===t.id);-1===e?(AppState.watchLater.push(t),Utils.showToast("Added to Watch Later")):(AppState.watchLater.splice(e,1),Utils.showToast("Removed from Watch Later")),Utils.saveLS(CONFIG.STORAGE.WATCH_LATER_KEY,AppState.watchLater),updateStats(),AppState.hero&&AppState.hero.id===t.id&&renderHero(AppState.hero),renderGrid(),DOM.watchLaterContainer&&renderWatchLater()}function openWatchLater(){DOM.watchLaterPage&&(renderWatchLater(),DOM.watchLaterPage.style.display="block",DOM.watchLaterPage.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.watchLaterPage),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"))}function closeWatchLater(){DOM.watchLaterPage&&(DOM.watchLaterPage.style.display="none",DOM.watchLaterPage.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}let initAnalyticsChart=async()=>{var e=document.getElementById("analyticsChart");e&&(window.Chart||await new Promise(e=>{var t=document.createElement("script");t.src="https://cdn.jsdelivr.net/npm/chart.js",t.onload=e,document.head.appendChild(t)}),e=e.getContext("2d"),window.myChart&&window.myChart.destroy(),window.myChart=new Chart(e,{type:"line",data:{labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],datasets:[{label:"Subscriber Growth",data:[12,19,3,5,2,3,9],borderColor:"#e50914",backgroundColor:"rgba(229, 9, 20, 0.1)",fill:!0,tension:.4}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{display:!1}},scales:{y:{display:!1},x:{grid:{display:!1},ticks:{color:"#808080",font:{size:10}}}}}}))},initAIAssistant=()=>{var e;if(isFeatureEnabled("AI_ASSISTANT")){let s=document.getElementById("ai-score-title"),a=document.getElementById("ai-generate-hook"),o=document.getElementById("ai-title-input");s&&s.addEventListener("click",()=>{o.value.trim()?(s.disabled=!0,s.innerHTML='<i class="fas fa-spinner fa-spin"></i>',setTimeout(()=>{var e=Math.floor(30*Math.random()+65),t=document.getElementById("ai-score-result"),a=document.getElementById("ai-score-value"),o=document.getElementById("ai-score-bar");t.classList.remove("hidden"),a.textContent=e+"/100",o.style.width=e+"%",s.disabled=!1,s.textContent="Score",Utils.showToast("Title analyzed!","success")},1e3)):Utils.showToast("Please enter a title","warning")}),a&&a.addEventListener("click",()=>{a.disabled=!0,a.innerHTML='<i class="fas fa-spinner fa-spin"></i> Analyzing...';let t=["What if everything you knew about the fall of Andalusia was wrong?","Behind the silence of history lies a truth far more cinematic than fiction.","The year was 1492. The world was changing. And at the center of it all?","How did one decision change the course of human history forever?"];setTimeout(()=>{var e=document.getElementById("ai-hook-result");e.classList.remove("hidden"),e.textContent=t[Math.floor(Math.random()*t.length)],a.disabled=!1,a.innerHTML='<i class="fas fa-bolt mr-2 text-primary"></i> Generate Viral Hook',Utils.showToast("Hook generated!","success")},1200)}),document.querySelectorAll("#ai-topics span").forEach(t=>{t.addEventListener("click",()=>{var e=t.textContent;o&&(o.value=e,Utils.showToast("Selected: "+e,"info"))}),t.addEventListener("keydown",e=>{"Enter"!==e.key&&" "!==e.key||(e.preventDefault(),t.click())})})}else(e=document.getElementById("ai-assistant-panel"))&&(e.style.display="none")};function openDashboard(){DOM.dashboardModal&&(renderDashboard(),initAnalyticsChart(),initAIAssistant(),DOM.dashboardModal.style.display="block",DOM.dashboardModal.setAttribute("aria-hidden","false"),Utils.trapFocus(DOM.dashboardModal),DOM.body.style.overflow="hidden",DOM.body.classList.add("modal-open"))}function closeDashboard(){DOM.dashboardModal&&(DOM.dashboardModal.style.display="none",DOM.dashboardModal.setAttribute("aria-hidden","true"),DOM.body.style.overflow="",DOM.body.classList.remove("modal-open"),AppState.lastFocused)&&(AppState.lastFocused.focus(),AppState.lastFocused=null)}function setTheme(t){AppState.theme=t,Utils.saveLS(CONFIG.STORAGE.THEME_KEY,t),DOM.body.classList.remove("light-mode","theme-neon"),"light"===t?DOM.body.classList.add("light-mode"):"neon"===t&&DOM.body.classList.add("theme-neon");var e=DOM.themeToggle?.querySelector("i");e&&(e.className="dark"===t?"fa-regular fa-moon":"neon"===t?"fa-solid fa-bolt":"fa-regular fa-sun"),document.querySelectorAll(".theme-opt").forEach(e=>{e.classList.toggle("active",e.dataset.theme===t)})}function toggleTheme(){setTheme("dark"===AppState.theme?"light":"dark")}function switchMode(e){"creator"===e?(DOM.studioRoot&&(DOM.studioRoot.style.display="block"),DOM.appRoot&&(DOM.appRoot.style.display="none"),DOM.heroSection&&(DOM.heroSection.style.display="none"),DOM.continueBlockSec&&(DOM.continueBlockSec.style.display="none"),updateBreadcrumbs("Studio > Projects")):(DOM.studioRoot&&(DOM.studioRoot.style.display="none"),DOM.appRoot&&(DOM.appRoot.style.display="block"),DOM.heroSection&&(DOM.heroSection.style.display="block"),DOM.continueBlockSec&&AppState.videos.some(e=>getProgress(e.id))&&(DOM.continueBlockSec.style.display="block"))}function updateBreadcrumbs(e){if(DOM.studioBreadcrumbs){let a=e.split(" > ");DOM.studioBreadcrumbs.innerHTML=a.map((e,t)=>t===a.length-1?`<span class="current">${e}</span>`:`<span>${e}</span>`).join(' <i class="fa-solid fa-chevron-right" style="font-size:0.7rem; margin:0 8px; opacity:0.5;"></i> ')}}function renderProjects(){var e=document.getElementById("studioProjectsList");if(e){let o=Utils.getLS(CONFIG.STORAGE.PROJECTS_KEY,[{id:"p1",title:"The Fall of the Abbasids",status:"Writing",progress:65,date:"2024-05-10"},{id:"p2",title:"Prophecy & Modernity",status:"Researching",progress:30,date:"2024-05-12"},{id:"p3",title:"The Silent Silk Road",status:"Editing",progress:90,date:"2024-05-08"},{id:"p4",title:"The Golden Age",status:"Published",progress:100,date:"2024-05-01"}]);"list"===AppState.currentView?(e.className="studio-projects-grid",e.innerHTML=o.map(e=>`
             `).join('')
             : '<p style="color:var(--text-soft)">No saved episodes.</p>';
     }
@@ -502,8 +489,8 @@ function updateStats() {
     if (DOM.statSaved) DOM.statSaved.textContent = AppState.watchLater.length;
     if (DOM.statProgress) DOM.statProgress.textContent = Object.keys(AppState.progress).length;
     if (DOM.watchLaterCount) DOM.watchLaterCount.textContent = AppState.watchLater.length;
-    if (DOM.watchLaterBadge) {
-        DOM.watchLaterBadge.setAttribute('aria-label', `Open watch later list (${AppState.watchLater.length} episodes)`);
+    if (DOM.watchLaterBtn) {
+        DOM.watchLaterBtn.setAttribute('aria-label', `View Saved Episodes (${AppState.watchLater.length} episode${AppState.watchLater.length !== 1 ? 's' : ''})`);
     }
 }
 
@@ -987,6 +974,24 @@ function setupRecommendedSection() {
 // EVENT LISTENERS
 // ============================================
 function bindEvents() {
+    // Navbar Brand - Back to Top
+    if (DOM.navbarBrand) {
+        const scrollToTopAction = () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        };
+        DOM.navbarBrand.addEventListener('click', scrollToTopAction);
+        DOM.navbarBrand.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                scrollToTopAction();
+            }
+        });
+    }
+
     // Theme toggle & Menu
     if (DOM.themeToggle && DOM.themeMenu) {
         DOM.themeToggle.addEventListener('click', (e) => {
@@ -1033,83 +1038,6 @@ function bindEvents() {
     });
 
     // Hero buttons
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
     // Navbar Episodes Scroll
     if (DOM.episodesNavBtn && DOM.episodesSection) {
         DOM.episodesNavBtn.addEventListener('click', () => {
