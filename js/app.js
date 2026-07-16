@@ -98,20 +98,7 @@ const DOM = {
     // Theme & UI
     themeToggle: document.getElementById('themeToggleBtn'),
     themeMenu: document.getElementById('themeMenu'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
-    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
-    episodesSection: document.getElementById('episodesSection'),
+    navbarBrand: document.getElementById('navbarBrand'),
     episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
     episodesSection: document.getElementById('episodesSection'),
     menuToggle: document.getElementById('menuToggleBtn'),
@@ -1033,13 +1020,19 @@ function bindEvents() {
     });
 
     // Hero buttons
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+    if (DOM.navbarBrand) {
+        const scrollToTopAction = () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             if (document.body.classList.contains('mobile-nav-active')) {
                 document.body.classList.remove('mobile-nav-active');
                 if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        };
+        DOM.navbarBrand.addEventListener('click', scrollToTopAction);
+        DOM.navbarBrand.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                scrollToTopAction();
             }
         });
     }
@@ -1056,71 +1049,6 @@ function bindEvents() {
     }
 
     // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // Navbar Episodes Scroll
-    if (DOM.episodesNavBtn && DOM.episodesSection) {
-        DOM.episodesNavBtn.addEventListener('click', () => {
-            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
-            if (document.body.classList.contains('mobile-nav-active')) {
-                document.body.classList.remove('mobile-nav-active');
-                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
     if (DOM.heroBtn) DOM.heroBtn.addEventListener('click', () => AppState.hero && openVideo(AppState.hero));
     if (DOM.heroSave) DOM.heroSave.addEventListener('click', () => AppState.hero && toggleWatchLater(AppState.hero));
 
@@ -1326,6 +1254,12 @@ function bindEvents() {
             } else if (key === 'b') {
                 e.preventDefault();
                 toggleWatchLater(AppState.current);
+            } else if (key === 's') {
+                e.preventDefault();
+                openShare();
+            } else if (key === 'n') {
+                e.preventDefault();
+                openTranscript();
             }
         }
 

@@ -50,3 +50,7 @@
 ## 2025-05-14 - Social Sharing Implementation
 **Learning:** Placeholders for social sharing buttons significantly degrade UX when users expect to share discovered content. Standardizing these intents with popup windows (550x450) provides a "premium" feel while keeping users on the platform.
 **Action:** Always verify if sharing icons in modals are functional; if not, implement standardized platform intents using centered popups.
+
+## 2026-07-16 - Accessible Brand Identity and Shortcut Discoverability
+**Learning:** The brand logo is an often-overlooked anchor for "Back to Top" functionality. Enhancing it with semantic roles and keyboard listeners improves both accessibility and navigation efficiency. Pairing these with explicit shortcut hints in action button titles (e.g., 'Share (S)') significantly lowers the barrier for power users without cluttering the visual UI.
+**Action:** Always verify if brand logos can serve as functional anchors and ensure all modal actions have discoverability hints for their associated keyboard shortcuts.
