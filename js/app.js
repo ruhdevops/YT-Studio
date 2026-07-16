@@ -116,6 +116,7 @@ const DOM = {
     episodesSection: document.getElementById('episodesSection'),
     menuToggle: document.getElementById('menuToggleBtn'),
     scrollToTop: document.getElementById('scrollToTop'),
+    navbarBrand: document.getElementById('navbarBrand'),
 
     // Watch Later
     watchLaterBtn: document.getElementById('watchLaterBtn'),
@@ -1257,9 +1258,26 @@ function bindEvents() {
         window.addEventListener('scroll', () => {
             DOM.scrollToTop.classList.toggle('show', window.scrollY > 500);
         });
-        DOM.scrollToTop.addEventListener('click', () => {
+
+        const scrollToTopAction = () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        };
+
+        DOM.scrollToTop.addEventListener('click', scrollToTopAction);
+
+        if (DOM.navbarBrand) {
+            DOM.navbarBrand.addEventListener('click', scrollToTopAction);
+            DOM.navbarBrand.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    scrollToTopAction();
+                }
+            });
+        }
     }
 
     // Header scroll effect

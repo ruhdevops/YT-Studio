@@ -50,3 +50,7 @@
 ## 2025-05-14 - Social Sharing Implementation
 **Learning:** Placeholders for social sharing buttons significantly degrade UX when users expect to share discovered content. Standardizing these intents with popup windows (550x450) provides a "premium" feel while keeping users on the platform.
 **Action:** Always verify if sharing icons in modals are functional; if not, implement standardized platform intents using centered popups.
+
+## 2025-07-16 - Logo as Functional Navigation Anchor
+**Learning:** Transforming the site logo into a "Back to Top" trigger provides a persistent, intuitive navigation path in long-scrolling archives. Enhancing it with `role="button"` and `tabindex="0"` ensures this functionality is accessible to screen readers and keyboard users, while synchronizing it with the mobile menu state prevents UI overlap.
+**Action:** Always enhance the primary brand element with 'Back to Top' functionality and accessibility attributes (ARIA roles/labels) to improve orientation and usability.
