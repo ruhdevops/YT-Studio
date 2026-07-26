@@ -1,10 +1,20 @@
-with open('index.html', 'r') as f:
-    content = f.read()
+from pathlib import Path
 
-# Add title attribute to search button
-old_search = '<button class=\"nav-link\" id=\"searchToggleBtn\" aria-controls=\"searchSection\" aria-expanded=\"false\">'
-new_search = '<button class=\"nav-link\" id=\"searchToggleBtn\" aria-controls=\"searchSection\" aria-expanded=\"false\" title=\"Search (/)\">'
-content = content.replace(old_search, new_search)
+filepath = Path("index.html")
+if filepath.exists():
+    with filepath.open("r") as f:
+        content = f.read()
 
-with open('index.html', 'w') as f:
-    f.write(content)
+    # Add title attribute to search button
+    old_search = (
+        '<button class="nav-link" id="searchToggleBtn" '
+        'aria-controls="searchSection" aria-expanded="false">'
+    )
+    new_search = (
+        '<button class="nav-link" id="searchToggleBtn" '
+        'aria-controls="searchSection" aria-expanded="false" title="Search (/)">'
+    )
+    content = content.replace(old_search, new_search)
+
+    with filepath.open("w") as f:
+        f.write(content)

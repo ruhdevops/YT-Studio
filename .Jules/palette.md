@@ -50,3 +50,7 @@
 ## 2025-05-14 - Social Sharing Implementation
 **Learning:** Placeholders for social sharing buttons significantly degrade UX when users expect to share discovered content. Standardizing these intents with popup windows (550x450) provides a "premium" feel while keeping users on the platform.
 **Action:** Always verify if sharing icons in modals are functional; if not, implement standardized platform intents using centered popups.
+
+## 2025-05-30 - Accessible Icon-Only Buttons
+**Learning:** Icon-only buttons (such as those in view controls or custom side headers) require both descriptive `aria-label` for screen reader accessibility and consistent `title` attributes to act as visual tooltips for mouse users. Failing to include these leads to poor discoverability and an inaccessible interactive state.
+**Action:** Always audit interface control buttons and ensure all icon-only buttons have descriptive `aria-label` and `title` attributes, keeping cryptographic shortcuts out of the screen reader label but included in the visual tooltip hint.
