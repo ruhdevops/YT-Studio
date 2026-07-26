@@ -81,7 +81,7 @@
           <i class="fas fa-film"></i>
           <span>Episodes</span>
         </button>
-        <button class="nav-link" id="searchToggleBtn" aria-controls="searchSection" aria-expanded="false" title="Search (/)">
+        <button class="nav-link" id="searchToggleBtn" aria-controls="searchSection" aria-expanded="false" title="Search (/)" aria-label="Search">
           <i class="fas fa-search"></i>
           <span>Search</span>
         </button>
@@ -115,7 +115,7 @@
           <button class="mode-btn active px-3 py-1 text-[10px] rounded-md transition-all font-bold uppercase tracking-wider" data-mode="archive" aria-pressed="true">Archive</button>
           <button class="mode-btn px-3 py-1 text-[10px] rounded-md transition-all font-bold uppercase tracking-wider" data-mode="creator" aria-pressed="false">Studio</button>
         </div>
-        <button id="menuToggleBtn" class="menu-toggle" aria-label="Menu" aria-controls="navbar-nav" aria-expanded="false">
+        <button id="menuToggleBtn" class="menu-toggle" aria-label="Menu" title="Menu" aria-controls="navbar-nav" aria-expanded="false">
           <span></span>
           <span></span>
           <span></span>
@@ -168,7 +168,7 @@
               autocomplete="off"
             >
             <kbd class="search-kbd-hint">/</kbd>
-            <button id="clearSearch" class="search-clear" aria-label="Clear search" style="display: none;">
+            <button id="clearSearch" class="search-clear" aria-label="Clear search" title="Clear search" style="display: none;">
               <i class="fas fa-times"></i>
             </button>
             <div id="searchDropdown" class="search-dropdown"></div>
@@ -348,8 +348,8 @@
             <div class="flex items-center justify-between mb-6">
               <h3 class="font-display text-xl">Active Projects</h3>
               <div class="flex bg-black/20 p-1 rounded-lg">
-                <button id="listViewBtn" class="p-2 rounded-md active"><i class="fas fa-list"></i></button>
-                <button id="kanbanViewBtn" class="p-2 rounded-md"><i class="fas fa-th-large"></i></button>
+                <button id="listViewBtn" class="p-2 rounded-md active" aria-label="List View" title="List View"><i class="fas fa-list"></i></button>
+                <button id="kanbanViewBtn" class="p-2 rounded-md" aria-label="Kanban View" title="Kanban View"><i class="fas fa-th-large"></i></button>
               </div>
             </div>
             <div id="studioProjectsList" class="studio-projects-grid">
@@ -365,7 +365,7 @@
           <!-- Active Project Detail View -->
           <div id="active-project-view" class="studio-view hidden">
             <div class="flex items-center gap-4 mb-6">
-              <button id="backToProjectsBtn" class="action-btn"><i class="fas fa-arrow-left"></i></button>
+              <button id="backToProjectsBtn" class="action-btn" aria-label="Back to Projects" title="Back to Projects"><i class="fas fa-arrow-left"></i></button>
               <h3 id="current-project-title" class="font-display text-xl">New Project</h3>
             </div>
             
