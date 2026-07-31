@@ -59,7 +59,7 @@
     "@cloudflare/vite-plugin": "^1.36.3",
     "@firebase/functions": "^0.13.4",
     "@octokit/rest": "^22.0.1",
-    "@textlint/source-code-fixer": "^15.6.0",
+    "@textlint/source-code-fixer": "^15.7.0",
     "@varlock/cloudflare-integration": "^1.1.1",
     "@vercel/functions": "^3.5.0",
     "chunk": "^0.0.3",
