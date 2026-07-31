@@ -52,7 +52,7 @@
     "typescript": "^5.1.6",
     "varlock": "^1.1.0",
     "vite": "^8.0.11",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.6"
   },
   "dependencies": {
     "@circleci/circleci-config-sdk": "^0.8.0",
