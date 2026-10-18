@@ -29,10 +29,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm ci
       - run:
           name: Run linting
           command: |
@@ -43,13 +48,61 @@ jobs:
           command: |
             cd functions
             npx tsc --noEmit
+
+  worker-build:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Install dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: TypeScript check on Cloudflare Worker
+          command: |
+            pnpm exec tsc --noEmit
+      - run:
+          name: Verify worker entry point exists
+          command: |
+            test -f src/youtube-worker.ts && echo "Worker entry point OK: src/youtube-worker.ts"
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API Worker to Cloudflare
+          command: |
+            pnpm exec wrangler deploy src/youtube-worker.ts --name ytstudio --env production
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
 
 workflows:
   version: 2
+
   validate:
     jobs:
       - python-checks
       - node-checks
+      - worker-build
+
+  deploy:
+    jobs:
+      - worker-build:
+          filters:
+            branches:
+              only: main
+      - deploy-worker:
+          requires:
+            - worker-build
+          filters:
+            branches:
+              only: main
