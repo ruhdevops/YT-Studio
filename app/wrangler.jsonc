@@ -1,8 +1,12 @@
 {
-	"name": "<WORKER_NAME>",
+	"name": "youtube-api-worker",
 	"main": "src/index.ts",
-	"compatibility_date": "<COMPATIBILITY_DATE>",
+	"compatibility_date": "2024-09-23",
 	"observability": {
 		"enabled": true,
+	},
+	"vars": {
+		"CHANNEL_ID": "UCrjJP_SHUeCmqpTSHJCXkdA",
+		"ENVIRONMENT": "production",
 	},
 }
