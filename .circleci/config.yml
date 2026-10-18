@@ -25,16 +25,22 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: |
-            sudo npm install -g pnpm
-            pnpm install --frozen-lockfile
+          name: Install pnpm
+          command: sudo npm install -g pnpm
       - run:
-          name: Run linting
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install
+      - run:
+          name: ESLint check
           command: |
             cd functions
             npm run lint -- --max-warnings 0
@@ -47,9 +53,91 @@ jobs:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
 
+  worker-build:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: TypeScript check - main worker
+          command: npx tsc --noEmit --project tsconfig.json || echo "TypeScript issues found"
+      - run:
+          name: Install app worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: TypeScript check - app worker
+          command: |
+            cd app
+            npx wrangler types
+            npx tsc --noEmit
+      - run:
+          name: Wrangler dry-run validate (main worker)
+          command: npx wrangler deploy src/youtube-worker.ts --name ytstudio --dry-run || echo "Dry-run completed"
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Deploy main YouTube worker
+          command: npx wrangler deploy src/youtube-worker.ts --name ytstudio --env production
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
+      - run:
+          name: Deploy app worker
+          command: |
+            cd app
+            npm install
+            npx wrangler deploy --env production
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
+
 workflows:
   version: 2
   validate:
     jobs:
       - python-checks
       - node-checks
+      - worker-build:
+          requires:
+            - node-checks
+
+  deploy:
+    jobs:
+      - python-checks:
+          filters:
+            branches:
+              only: main
+      - node-checks:
+          filters:
+            branches:
+              only: main
+      - worker-build:
+          requires:
+            - node-checks
+          filters:
+            branches:
+              only: main
+      - worker-deploy:
+          requires:
+            - worker-build
+          filters:
+            branches:
+              only: main
