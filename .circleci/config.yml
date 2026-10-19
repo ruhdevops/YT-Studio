@@ -25,14 +25,19 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.9
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --no-audit --no-fund
       - run:
           name: Run linting
           command: |
@@ -42,10 +47,28 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
       - run:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:22.9
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API Worker to Cloudflare
+          command: |
+            pnpm wrangler deploy --env production
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
 
 workflows:
   version: 2
@@ -53,3 +76,9 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - deploy-worker:
+          requires:
+            - node-checks
+          filters:
+            branches:
+              only: main
