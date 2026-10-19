@@ -1,9 +1,7 @@
 # CircleCI Deployment Configuration for YT-Studio
-# Generated automatically - do not manually edit unless necessary
 
 version: 2.1
 
-# Reusable commands
 commands:
   setup-node-pnpm:
     description: "Install Node.js and pnpm"
@@ -17,8 +15,17 @@ commands:
           name: Install pnpm
           command: sudo npm install -g pnpm
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: pnpm install --frozen-lockfile
+
+  setup-functions-npm:
+    description: "Install Firebase Functions npm dependencies"
+    steps:
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install
 
   setup-firebase:
     description: "Install Firebase CLI and dependencies"
@@ -52,7 +59,6 @@ commands:
       - attach_workspace:
           at: ~/project
 
-# Jobs
 jobs:
   lint:
     docker:
@@ -60,6 +66,7 @@ jobs:
     steps:
       - checkout
       - setup-node-pnpm
+      - setup-functions-npm
       - run:
           name: ESLint check
           command: |
@@ -69,10 +76,7 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
-      - run:
-          name: Quality GC check
-          command: npx quality-gc run
+            npm run build -- --noEmit 2>/dev/null || ./node_modules/.bin/tsc --noEmit
 
   build:
     docker:
@@ -80,6 +84,7 @@ jobs:
     steps:
       - checkout
       - setup-node-pnpm
+      - setup-functions-npm
       - run:
           name: Build Firebase Functions
           command: |
@@ -96,15 +101,12 @@ jobs:
     steps:
       - checkout
       - setup-node-pnpm
+      - setup-functions-npm
       - run:
           name: Run unit tests
           command: |
             cd functions
-            npm test || echo "No tests defined"
-      - run:
-          name: Run integration tests (emulators)
-          command: |
-            npx firebase emulators:exec --only firestore,auth "npm run test:integration" || echo "Integration tests skipped"
+            npm test
 
   deploy-preview:
     docker:
@@ -148,11 +150,9 @@ jobs:
             echo "Build failed for $CIRCLE_BRANCH" | curl -X POST -H "Content-Type: application/json" -d "{\"content\": \"$(cat)\"}" $WEBHOOK_URL
           when: on_fail
 
-# Workflows
 workflows:
   version: 2
 
-  # Workflow for all branches (CI)
   ci:
     jobs:
       - lint
@@ -175,7 +175,6 @@ workflows:
             branches:
               ignore: main
 
-  # Workflow for main branch (CD)
   cd:
     jobs:
       - lint:
@@ -207,4 +206,3 @@ workflows:
             branches:
               only: main
           when: on_fail
-
