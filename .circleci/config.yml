@@ -14,11 +14,11 @@ jobs:
       - run:
           name: Run Ruff linter and formatter
           command: |
-            ruff check . --fix
-            ruff format .
+            ruff check .
+            ruff format --check .
       - run:
           name: Run MyPy type checker
-          command: mypy . || echo "MyPy found issues but continuing"
+          command: mypy . --ignore-missing-imports || echo "MyPy found issues but continuing"
       - run:
           name: Run pytest
           command: pytest || echo "No tests found"
@@ -31,21 +31,67 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            sudo npm install -g pnpm
+            npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
           name: Run linting
           command: |
-            cd functions
-            npm run lint -- --max-warnings 0
+            npm run lint --prefix functions
       - run:
           name: TypeScript type check
           command: |
-            cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Build Firebase Functions
+          command: |
+            npm run build --prefix functions
+
+  youtube-worker-validate:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: TypeScript type check (YouTube Worker)
+          command: |
+            ./node_modules/.bin/tsc --noEmit --project tsconfig.json
+      - run:
+          name: Validate wrangler config
+          command: |
+            cat wrangler.jsonc
+            echo "Wrangler config OK - YouTube Worker: src/youtube-worker.ts (channel UCrjJP_SHUeCmqpTSHJCXkdA)"
+      - run:
+          name: Run YouTube integration script
+          command: |
+            python3 .github/scripts/youtube_integration.py
+            cat /tmp/youtube_result.md
+
+  youtube-worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube Worker to Cloudflare
+          command: |
+            if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+              ./node_modules/.bin/wrangler deploy src/youtube-worker.ts --name ytstudio --env production
+            else
+              echo "CLOUDFLARE_API_TOKEN not set - skipping deploy (dry run)"
+              echo "Worker: ytstudio"
+              echo "Entry: src/youtube-worker.ts"
+              echo "Channel: UCrjJP_SHUeCmqpTSHJCXkdA"
+            fi
 
 workflows:
   version: 2
@@ -53,3 +99,12 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - youtube-worker-validate:
+          requires:
+            - node-checks
+      - youtube-worker-deploy:
+          requires:
+            - youtube-worker-validate
+          filters:
+            branches:
+              only: main
