@@ -111,7 +111,7 @@ def check_github_actions() -> bool:
         return False
 
     workflow_files: list[Path] = list(workflows_dir.glob("*.yml")) + list(
-        workflows_dir.glob("*.yaml")
+        workflows_dir.glob("*.yaml"),
     )
     print(colored(f"   ✅ Found {len(workflow_files)} workflow(s)", "green"))
 
