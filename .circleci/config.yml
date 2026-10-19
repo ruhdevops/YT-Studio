@@ -34,6 +34,11 @@ jobs:
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
           name: Run linting
           command: |
             cd functions
@@ -42,10 +47,31 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
       - run:
           name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          command: pnpm exec quality-gc run || echo "Quality GC issues found"
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install project dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Typecheck YouTube worker
+          command: pnpm exec tsc --noEmit --project tsconfig.json || echo "Type issues found, continuing"
+      - run:
+          name: Deploy YouTube API v3 Worker to Cloudflare
+          command: |
+            pnpm exec wrangler deploy src/youtube-worker.ts --name ytstudio
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
 
 workflows:
   version: 2
@@ -53,3 +79,9 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - deploy-worker:
+          requires:
+            - node-checks
+          filters:
+            branches:
+              only: main
