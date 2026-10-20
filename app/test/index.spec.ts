@@ -2,28 +2,51 @@ import {
 	env,
 	createExecutionContext,
 	waitOnExecutionContext,
-	SELF,
 } from "cloudflare:test";
 import { describe, it, expect } from "vitest";
 import worker from "../src/index";
 
-// For now, you'll need to do something like this to get a correctly-typed
-// `Request` to pass to `worker.fetch()`.
 const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 
-describe("Hello World worker", () => {
-	it("responds with Hello World! (unit style)", async () => {
-		const request = new IncomingRequest("http://example.com");
-		// Create an empty context to pass to `worker.fetch()`.
+describe("YouTube API v3 Worker", () => {
+	it("health endpoint returns healthy status", async () => {
+		const request = new IncomingRequest("http://localhost/health");
 		const ctx = createExecutionContext();
 		const response = await worker.fetch(request, env, ctx);
-		// Wait for all `Promise`s passed to `ctx.waitUntil()` to settle before running test assertions
 		await waitOnExecutionContext(ctx);
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+		expect(response.status).toBe(200);
+		const data = await response.json() as { status: string; worker: string };
+		expect(data.status).toBe("healthy");
+		expect(data.worker).toBe("yt-studio-worker");
 	});
 
-	it("responds with Hello World! (integration style)", async () => {
-		const response = await SELF.fetch("https://example.com");
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+	it("videos endpoint returns demo videos when no API key", async () => {
+		const request = new IncomingRequest("http://localhost/api/videos");
+		const ctx = createExecutionContext();
+		const response = await worker.fetch(request, env, ctx);
+		await waitOnExecutionContext(ctx);
+		expect(response.status).toBe(200);
+		const data = await response.json() as { success: boolean; isDemo: boolean; videos: unknown[] };
+		expect(data.success).toBe(true);
+		expect(data.isDemo).toBe(true);
+		expect(Array.isArray(data.videos)).toBe(true);
+		expect(data.videos.length).toBeGreaterThan(0);
+	});
+
+	it("OPTIONS returns CORS headers", async () => {
+		const request = new IncomingRequest("http://localhost/api/videos", { method: "OPTIONS" });
+		const ctx = createExecutionContext();
+		const response = await worker.fetch(request, env, ctx);
+		await waitOnExecutionContext(ctx);
+		expect(response.status).toBe(204);
+		expect(response.headers.get("Access-Control-Allow-Origin")).toBe("*");
+	});
+
+	it("unknown route returns 404", async () => {
+		const request = new IncomingRequest("http://localhost/unknown");
+		const ctx = createExecutionContext();
+		const response = await worker.fetch(request, env, ctx);
+		await waitOnExecutionContext(ctx);
+		expect(response.status).toBe(404);
 	});
 });
