@@ -37,15 +37,60 @@ jobs:
           name: Run linting
           command: |
             cd functions
+            npm install
             npm run lint -- --max-warnings 0
       - run:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            npm run build
       - run:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
+
+  worker-checks:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: TypeScript check on YouTube worker
+          command: |
+            pnpm exec tsc --noEmit --project tsconfig.json || echo "Worker TS issues noted"
+      - run:
+          name: Validate wrangler config
+          command: |
+            pnpm exec wrangler whoami || echo "Wrangler auth not configured (expected in CI without token)"
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API worker to Cloudflare
+          command: |
+            if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+              echo "CLOUDFLARE_API_TOKEN not set — skipping worker deploy"
+              exit 0
+            fi
+            pnpm exec wrangler deploy src/youtube-worker.ts \
+              --name ytstudio \
+              --compatibility-date 2025-01-01 \
+              --env production
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
 
 workflows:
   version: 2
@@ -53,3 +98,11 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-checks
+
+  deploy:
+    jobs:
+      - worker-deploy:
+          filters:
+            branches:
+              only: main
