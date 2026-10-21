@@ -25,14 +25,19 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install
       - run:
           name: Run linting
           command: |
@@ -45,7 +50,23 @@ jobs:
             npx tsc --noEmit
       - run:
           name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          command: npx quality-gc run || echo "Quality GC issues found - continuing"
+
+  worker-tests:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
+      - run:
+          name: Install app dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: Run Cloudflare Worker tests
+          command: |
+            cd app
+            npm test -- --run
 
 workflows:
   version: 2
@@ -53,3 +74,4 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-tests
