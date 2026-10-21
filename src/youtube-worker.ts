@@ -1,7 +1,8 @@
 /**
  * YouTube API V3 Worker - Cloudflare Worker
- * Fetches data from YouTube Channel: UCrjJP_SHUeCmqpTSHJCXkdA (Ruh Al Tarikh)
- * Provides video listing and channel statistics via API endpoints
+ * Channel: UCrjJP_SHUeCmqpTSHJCXkdA (Ruh Al Tarikh)
+ * Endpoints: GET /health, /api/channel, /api/videos, /api/search
+ * Falls back to demo data when YOUTUBE_API_KEY is not set.
  */
 
 export interface Env {
