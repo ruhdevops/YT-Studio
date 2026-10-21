@@ -29,10 +29,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
       - run:
           name: Run linting
           command: |
@@ -42,10 +47,44 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
       - run:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
+
+  worker-checks:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: Run YouTube API v3 worker tests
+          command: |
+            cd app
+            npm test -- --run
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: Deploy YouTube API v3 worker to Cloudflare
+          command: |
+            cd app
+            npm run deploy
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
 
 workflows:
   version: 2
@@ -53,3 +92,10 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-checks
+      - worker-deploy:
+          requires:
+            - worker-checks
+          filters:
+            branches:
+              only: main
