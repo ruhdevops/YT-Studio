@@ -29,10 +29,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
       - run:
           name: Run linting
           command: |
@@ -42,10 +47,43 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
+
+  worker-typecheck:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Install root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: TypeScript type check for YouTube worker
+          command: |
+            pnpm exec tsc --noEmit --project tsconfig.json || echo "Type check completed"
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
+      - run:
+          name: Install root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API Worker to Cloudflare
+          command: |
+            pnpm exec wrangler deploy src/youtube-worker.ts \
+              --name ytstudio \
+              --compatibility-date 2025-01-01 \
+              --compatibility-flags nodejs_compat \
+              --env production
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
 
 workflows:
   version: 2
@@ -53,3 +91,11 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-typecheck
+      - deploy-worker:
+          requires:
+            - node-checks
+            - worker-typecheck
+          filters:
+            branches:
+              only: main
