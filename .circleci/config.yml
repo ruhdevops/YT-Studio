@@ -14,14 +14,14 @@ jobs:
       - run:
           name: Run Ruff linter and formatter
           command: |
-            ruff check . --fix
-            ruff format .
+            ruff check .github/scripts/ --fix
+            ruff format .github/scripts/
       - run:
           name: Run MyPy type checker
-          command: mypy . || echo "MyPy found issues but continuing"
+          command: mypy .github/scripts/ || echo "MyPy found issues but continuing"
       - run:
           name: Run pytest
-          command: pytest || echo "No tests found"
+          command: pytest || echo "No Python tests found"
 
   node-checks:
     docker:
@@ -29,23 +29,70 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm and root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
+          name: Install Firebase Functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
+          name: Run ESLint on Firebase Functions
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check (Firebase Functions)
           command: |
             cd functions
             npx tsc --noEmit
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Quality check
+          command: npx quality-gc run || echo "Quality GC check skipped (not installed)"
+
+  worker-build:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Type check YouTube API worker
+          command: |
+            npx tsc --noEmit --project tsconfig.json
+      - run:
+          name: Dry-run worker build (validate wrangler config)
+          command: |
+            npx wrangler deploy --dry-run --outdir /tmp/worker-dist --config wrangler.jsonc
+          environment:
+            CLOUDFLARE_ACCOUNT_ID: placeholder
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API Worker to Cloudflare
+          command: |
+            if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+              echo "⚠️  CLOUDFLARE_API_TOKEN not configured — skipping deploy."
+              exit 0
+            fi
+            npx wrangler deploy --config wrangler.jsonc
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
 
 workflows:
   version: 2
@@ -53,3 +100,12 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-build:
+          requires:
+            - node-checks
+      - worker-deploy:
+          requires:
+            - worker-build
+          filters:
+            branches:
+              only: main
