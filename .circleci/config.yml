@@ -29,23 +29,55 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
+          name: Run ESLint on functions
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check (functions)
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Run Vitest unit tests
+          command: pnpm run test:run || echo "No Vitest tests found"
+
+  deploy-youtube-worker:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Install Wrangler CLI
+          command: sudo npm install -g wrangler
+      - run:
+          name: TypeScript type check (worker)
+          command: ./node_modules/.bin/tsc --noEmit --project tsconfig.json
+      - run:
+          name: Deploy YouTube API Worker to Cloudflare
+          command: |
+            wrangler deploy src/youtube-worker.ts \
+              --name ytstudio \
+              --compatibility-date 2025-01-01 \
+              --compatibility-flags nodejs_compat
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
 
 workflows:
   version: 2
@@ -53,3 +85,9 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - deploy-youtube-worker:
+          requires:
+            - node-checks
+          filters:
+            branches:
+              only: main
