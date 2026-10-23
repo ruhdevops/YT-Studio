@@ -21,7 +21,7 @@ import {onRequest} from "firebase-functions/v2/https";
 // `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
 setGlobalOptions({maxInstances: 10});
 
-export const helloWorld = onRequest((request, response) => {
+export const helloWorld = onRequest((_request, response) => {
   logger.info("Hello logs!", {structuredData: true});
   response.send("Hello from Firebase!");
 });
