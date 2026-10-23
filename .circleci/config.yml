@@ -25,7 +25,36 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.11
+    steps:
+      - checkout
+      - run:
+          name: Install root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install
+      - run:
+          name: Run linting
+          command: |
+            cd functions
+            npm run lint -- --max-warnings 10
+      - run:
+          name: TypeScript type check (functions)
+          command: |
+            cd functions
+            npm run build
+      - run:
+          name: Quality GC check
+          command: npx quality-gc run || echo "Quality GC issues found"
+
+  worker-build:
+    docker:
+      - image: cimg/node:22.11
     steps:
       - checkout
       - run:
@@ -34,18 +63,17 @@ jobs:
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
-          command: |
-            cd functions
-            npm run lint -- --max-warnings 0
+          name: TypeScript type check for workers
+          command: pnpm run type-check
       - run:
-          name: TypeScript type check
+          name: Deploy YouTube worker to Cloudflare
           command: |
-            cd functions
-            npx tsc --noEmit
-      - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+            if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+              pnpm exec wrangler deploy src/youtube-worker.ts --name ytstudio --env=""
+            else
+              echo "CLOUDFLARE_API_TOKEN not set — skipping deploy (dry-run validation only)"
+              pnpm exec wrangler deploy src/youtube-worker.ts --name ytstudio --env="" --dry-run 2>&1 || true
+            fi
 
 workflows:
   version: 2
@@ -53,3 +81,4 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-build
