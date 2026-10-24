@@ -25,7 +25,7 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
     steps:
       - checkout
       - run:
@@ -42,10 +42,46 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            npm run build
       - run:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
+
+  worker-test:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
+      - run:
+          name: Install worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: Run worker tests
+          command: |
+            cd app
+            npm test
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
+      - run:
+          name: Install worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: Deploy Cloudflare Worker (YouTube API v3)
+          command: |
+            cd app
+            if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+              npm run deploy
+            else
+              echo "CLOUDFLARE_API_TOKEN not set — skipping deploy"
+            fi
 
 workflows:
   version: 2
@@ -53,3 +89,11 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-test
+
+  deploy:
+    jobs:
+      - worker-deploy:
+          filters:
+            branches:
+              only: main

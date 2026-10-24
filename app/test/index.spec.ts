@@ -7,23 +7,40 @@ import {
 import { describe, it, expect } from "vitest";
 import worker from "../src/index";
 
-// For now, you'll need to do something like this to get a correctly-typed
-// `Request` to pass to `worker.fetch()`.
 const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 
-describe("Hello World worker", () => {
-	it("responds with Hello World! (unit style)", async () => {
-		const request = new IncomingRequest("http://example.com");
-		// Create an empty context to pass to `worker.fetch()`.
+describe("YouTube API v3 Worker", () => {
+	it("responds with healthy status on / (unit style)", async () => {
+		const request = new IncomingRequest("http://example.com/");
 		const ctx = createExecutionContext();
 		const response = await worker.fetch(request, env, ctx);
-		// Wait for all `Promise`s passed to `ctx.waitUntil()` to settle before running test assertions
 		await waitOnExecutionContext(ctx);
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+		const body = await response.json() as Record<string, unknown>;
+		expect(response.status).toBe(200);
+		expect(body.status).toBe("healthy");
+		expect(body.worker).toBe("ytstudio-app");
 	});
 
-	it("responds with Hello World! (integration style)", async () => {
-		const response = await SELF.fetch("https://example.com");
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+	it("returns demo videos when API key is absent (unit style)", async () => {
+		const request = new IncomingRequest("http://example.com/api/videos");
+		const ctx = createExecutionContext();
+		const response = await worker.fetch(request, env, ctx);
+		await waitOnExecutionContext(ctx);
+		const body = await response.json() as Record<string, unknown>;
+		expect(response.status).toBe(200);
+		expect(body.isDemo).toBe(true);
+		expect(Array.isArray(body.videos)).toBe(true);
+	});
+
+	it("responds with healthy status on / (integration style)", async () => {
+		const response = await SELF.fetch("https://example.com/");
+		const body = await response.json() as Record<string, unknown>;
+		expect(response.status).toBe(200);
+		expect(body.status).toBe("healthy");
+	});
+
+	it("returns 404 for unknown paths", async () => {
+		const response = await SELF.fetch("https://example.com/unknown");
+		expect(response.status).toBe(404);
 	});
 });
