@@ -1,8 +1,22 @@
 {
-	"name": "<WORKER_NAME>",
+	"name": "yt-api-worker",
 	"main": "src/index.ts",
-	"compatibility_date": "<COMPATIBILITY_DATE>",
+	"compatibility_date": "2025-01-01",
+	"compatibility_flags": ["nodejs_compat"],
 	"observability": {
 		"enabled": true,
 	},
+	"vars": {
+		"ENVIRONMENT": "development",
+		"CHANNEL_ID": "UCrjJP_SHUeCmqpTSHJCXkdA"
+	},
+	"env": {
+		"production": {
+			"name": "yt-api-worker",
+			"vars": {
+				"ENVIRONMENT": "production",
+				"CHANNEL_ID": "UCrjJP_SHUeCmqpTSHJCXkdA"
+			}
+		}
+	}
 }
