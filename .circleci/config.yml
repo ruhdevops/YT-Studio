@@ -23,16 +23,33 @@ jobs:
           name: Run pytest
           command: pytest || echo "No tests found"
 
+  youtube-api-validate:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - checkout
+      - run:
+          name: Validate YouTube API integration script
+          command: python .github/scripts/youtube_integration.py
+      - run:
+          name: Show YouTube API result
+          command: cat /tmp/youtube_result.md || echo "No result file generated"
+
   node-checks:
     docker:
       - image: cimg/node:20.18
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install
       - run:
           name: Run linting
           command: |
@@ -47,9 +64,34 @@ jobs:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
 
+  deploy-worker:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube worker to Cloudflare Workers
+          command: pnpm run deploy:worker
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
+
 workflows:
   version: 2
   validate:
     jobs:
       - python-checks
+      - youtube-api-validate
       - node-checks
+
+  deploy:
+    jobs:
+      - deploy-worker:
+          filters:
+            branches:
+              only: main
