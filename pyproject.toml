@@ -10,7 +10,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "C", "N", "UP", "B", "A", "COM", "PT", "Q", "RET", "SIM", "TID", "ARG", "PTH", "RUF", "PD"]
-ignore = ["E501", "COM812"]   # line too long, handled by formatter
+ignore = ["E501", "COM812", "PTH123"]   # line too long, handled by formatter
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
