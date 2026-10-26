@@ -25,14 +25,19 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm and root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
       - run:
           name: Run linting
           command: |
@@ -42,7 +47,7 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
       - run:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
