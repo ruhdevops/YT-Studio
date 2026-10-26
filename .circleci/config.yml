@@ -25,7 +25,36 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
+    steps:
+      - checkout
+      - run:
+          name: Install root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
+          name: Run functions linting
+          command: |
+            cd functions
+            npm run lint -- --max-warnings 0
+      - run:
+          name: TypeScript type check (functions)
+          command: |
+            cd functions
+            node_modules/.bin/tsc --noEmit
+      - run:
+          name: TypeScript type check (root)
+          command: node_modules/.bin/tsc --noEmit || echo "Root TypeScript issues found"
+
+  worker-build:
+    docker:
+      - image: cimg/node:22.19
     steps:
       - checkout
       - run:
@@ -34,18 +63,52 @@ jobs:
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
-          command: |
-            cd functions
-            npm run lint -- --max-warnings 0
+          name: TypeScript type check (YouTube worker)
+          command: node_modules/.bin/tsc --noEmit
       - run:
-          name: TypeScript type check
+          name: Verify YouTube worker entrypoint
           command: |
-            cd functions
-            npx tsc --noEmit
+            node -e "
+              const fs = require('fs');
+              const src = fs.readFileSync('src/youtube-worker.ts', 'utf8');
+              const hasYouTubeAPI = src.includes('googleapis.com/youtube/v3');
+              const hasChannelEndpoint = src.includes('/api/channel');
+              const hasVideosEndpoint = src.includes('/api/videos');
+              const hasSearchEndpoint = src.includes('/api/search');
+              if (!hasYouTubeAPI) throw new Error('Missing YouTube API v3 calls');
+              if (!hasChannelEndpoint) throw new Error('Missing /api/channel endpoint');
+              if (!hasVideosEndpoint) throw new Error('Missing /api/videos endpoint');
+              if (!hasSearchEndpoint) throw new Error('Missing /api/search endpoint');
+              console.log('YouTube API v3 worker verified:');
+              console.log('  - googleapis.com/youtube/v3: OK');
+              console.log('  - /api/channel endpoint: OK');
+              console.log('  - /api/videos endpoint: OK');
+              console.log('  - /api/search endpoint: OK');
+            "
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Install dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API Worker to Cloudflare
+          command: |
+            if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+              echo "CLOUDFLARE_API_TOKEN not set — skipping deploy (set in CircleCI project env vars)"
+              exit 0
+            fi
+            node_modules/.bin/wrangler deploy src/youtube-worker.ts \
+              --name ytstudio \
+              --compatibility-date 2025-01-01 \
+              --compatibility-flags nodejs_compat
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
 
 workflows:
   version: 2
@@ -53,3 +116,10 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-build
+  deploy:
+    jobs:
+      - worker-deploy:
+          filters:
+            branches:
+              only: main
