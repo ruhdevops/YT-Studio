@@ -1,8 +1,13 @@
 {
-	"name": "<WORKER_NAME>",
+	"name": "ytstudio-app",
 	"main": "src/index.ts",
-	"compatibility_date": "<COMPATIBILITY_DATE>",
+	"compatibility_date": "2025-01-01",
+	"compatibility_flags": ["nodejs_compat"],
 	"observability": {
 		"enabled": true,
+	},
+	"vars": {
+		"ENVIRONMENT": "development",
+		"CHANNEL_ID": "UCrjJP_SHUeCmqpTSHJCXkdA",
 	},
 }
