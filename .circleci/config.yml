@@ -29,23 +29,63 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: |
-            sudo npm install -g pnpm
-            pnpm install --frozen-lockfile
+          name: Install global tools
+          command: sudo npm install -g pnpm
       - run:
-          name: Run linting
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Install Functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
+          name: Run Functions linting
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: Build Functions TypeScript
           command: |
             cd functions
-            npx tsc --noEmit
+            npm run build
       - run:
           name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          command: pnpm exec quality-gc run || echo "Quality GC issues found"
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install global tools
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Type-check YouTube worker
+          command: pnpm exec tsc --noEmit --project tsconfig.json
+      - run:
+          name: Deploy ytstudio worker (YouTube API v3)
+          command: pnpm exec wrangler deploy src/youtube-worker.ts --name ytstudio
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
+      - run:
+          name: Install app worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: Deploy ytstudio-app worker
+          command: |
+            cd app
+            npm run deploy
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
 
 workflows:
   version: 2
@@ -53,3 +93,9 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+  deploy-workers:
+    jobs:
+      - worker-deploy:
+          filters:
+            branches:
+              only: main
