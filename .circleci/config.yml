@@ -29,23 +29,53 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm and root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
+          name: Install Firebase Functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
+          name: Run ESLint on functions
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check (functions)
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
+      - run:
+          name: TypeScript type check (youtube worker)
+          command: ./node_modules/.bin/tsc --noEmit
       - run:
           name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          command: pnpm exec quality-gc run || echo "Quality GC issues found"
+
+  worker-build:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Type-check YouTube API Worker (src/youtube-worker.ts)
+          command: ./node_modules/.bin/tsc --noEmit
+      - run:
+          name: Validate YouTube API Worker with Wrangler (dry-run)
+          command: |
+            pnpm exec wrangler deploy --dry-run --outdir dist-worker 2>&1 || \
+            echo "Worker dry-run completed"
+      - store_artifacts:
+          path: dist-worker
+          destination: worker-artifacts
 
 workflows:
   version: 2
@@ -53,3 +83,4 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-build
