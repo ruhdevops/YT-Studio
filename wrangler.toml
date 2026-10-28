@@ -1,0 +1,13 @@
+name = "ytstudio"
+main = "src/youtube-worker.ts"
+compatibility_date = "2025-01-01"
+
+[observability]
+enabled = true
+
+[vars]
+ENVIRONMENT = "production"
+CHANNEL_ID = "UCrjJP_SHUeCmqpTSHJCXkdA"
+
+# YOUTUBE_API_KEY must be set as a secret:
+#   wrangler secret put YOUTUBE_API_KEY
