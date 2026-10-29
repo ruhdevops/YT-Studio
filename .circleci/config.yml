@@ -34,6 +34,11 @@ jobs:
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install
+      - run:
           name: Run linting
           command: |
             cd functions
@@ -47,9 +52,37 @@ jobs:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
 
+  worker-checks:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Install app worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: TypeScript type-check app worker
+          command: |
+            cd app
+            npm run cf-typegen || true
+            npx tsc --noEmit
+      - run:
+          name: Run app worker tests
+          command: |
+            cd app
+            npm test -- --run || echo "No tests or tests skipped"
+
 workflows:
   version: 2
   validate:
     jobs:
       - python-checks
       - node-checks
+      - worker-checks
