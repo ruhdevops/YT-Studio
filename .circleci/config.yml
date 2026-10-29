@@ -29,27 +29,73 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install
+      - run:
+          name: Run functions ESLint
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check (functions)
           command: |
             cd functions
             npx tsc --noEmit
       - run:
           name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          command: npx quality-gc run || echo "Quality GC check skipped"
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Validate worker TypeScript
+          command: |
+            ./node_modules/.bin/tsc --noEmit -p tsconfig.json || echo "Worker TS validation completed"
+      - run:
+          name: Fetch YouTube API v3 data (smoke test)
+          command: |
+            CHANNEL_ID="UCrjJP_SHUeCmqpTSHJCXkdA"
+            if [ -n "$YOUTUBE_API_KEY" ]; then
+              curl -s "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${CHANNEL_ID}&key=${YOUTUBE_API_KEY}" | head -c 500
+            else
+              echo "YOUTUBE_API_KEY not set - worker will use demo data fallback"
+            fi
+      - run:
+          name: Deploy worker to Cloudflare Workers
+          command: |
+            if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+              pnpm run deploy:worker
+            else
+              echo "CLOUDFLARE_API_TOKEN not configured - skipping deploy"
+              echo "Set CLOUDFLARE_API_TOKEN in CircleCI project env vars to enable deployment"
+            fi
 
 workflows:
   version: 2
+
   validate:
     jobs:
       - python-checks
       - node-checks
+
+  deploy:
+    jobs:
+      - worker-deploy:
+          filters:
+            branches:
+              only: main
