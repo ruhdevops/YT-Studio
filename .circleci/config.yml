@@ -25,14 +25,19 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
       - run:
           name: Run linting
           command: |
@@ -47,9 +52,56 @@ jobs:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
 
+  youtube-worker-deploy:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Fetch YouTube API v3 channel data
+          command: |
+            CHANNEL_ID="${CHANNEL_ID:-UCrjJP_SHUeCmqpTSHJCXkdA}"
+            echo "Fetching YouTube API v3 data for channel: $CHANNEL_ID"
+            if [ -n "$YOUTUBE_API_KEY" ]; then
+              RESPONSE=$(curl -sf "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${CHANNEL_ID}&key=${YOUTUBE_API_KEY}" || echo '{}')
+              echo "$RESPONSE" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+items = data.get('items', [])
+if items:
+    ch = items[0]
+    snippet = ch.get('snippet', {})
+    stats = ch.get('statistics', {})
+    print('Channel:', snippet.get('title', 'N/A'))
+    print('Subscribers:', stats.get('subscriberCount', 'Hidden'))
+    print('Views:', stats.get('viewCount', '0'))
+    print('Videos:', stats.get('videoCount', '0'))
+else:
+    print('No channel data returned (API key may be invalid or quota exceeded)')
+" 2>/dev/null || echo "Failed to parse channel response"
+            else
+              echo "YOUTUBE_API_KEY not configured — worker will serve demo data"
+            fi
+      - run:
+          name: Deploy Cloudflare Worker (ytstudio)
+          command: |
+            if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+              pnpm run deploy:worker
+            else
+              echo "CLOUDFLARE_API_TOKEN not set — skipping worker deployment"
+              echo "Worker source: src/youtube-worker.ts"
+              echo "To deploy, set CLOUDFLARE_API_TOKEN in CircleCI project settings"
+            fi
+
 workflows:
   version: 2
   validate:
     jobs:
       - python-checks
       - node-checks
+      - youtube-worker-deploy
