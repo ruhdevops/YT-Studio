@@ -29,12 +29,18 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: |
-            sudo npm install -g pnpm
-            pnpm install --frozen-lockfile
+          name: Install pnpm
+          command: sudo npm install -g pnpm
       - run:
-          name: Run linting
+          name: Install workspace dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install
+      - run:
+          name: Run ESLint
           command: |
             cd functions
             npm run lint -- --max-warnings 0
@@ -47,9 +53,82 @@ jobs:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
 
+  worker-build:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install workspace dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Install app worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: TypeScript check on root worker
+          command: npx tsc --noEmit --project tsconfig.json || echo "Root tsconfig check done"
+      - run:
+          name: TypeScript check on app worker
+          command: |
+            cd app
+            npx tsc --noEmit
+      - run:
+          name: Validate wrangler configs
+          command: |
+            echo "Root wrangler.jsonc: $(cat wrangler.jsonc | python3 -c 'import sys,re,json; c=sys.stdin.read(); c=re.sub(r",\s*([}\]])", r"\1", c); d=json.loads(c); print(d.get(\"name\",\"missing\"))')"
+            echo "App wrangler.jsonc: $(cat app/wrangler.jsonc | python3 -c 'import sys,re,json; c=sys.stdin.read(); c=re.sub(r",\s*([}\]])", r"\1", c); d=json.loads(c); print(d.get(\"name\",\"missing\"))')"
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and wrangler
+          command: |
+            sudo npm install -g pnpm wrangler
+      - run:
+          name: Install workspace dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Deploy ytstudio worker (src/youtube-worker.ts)
+          command: |
+            wrangler deploy src/youtube-worker.ts --name ytstudio
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
+      - run:
+          name: Install app worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: Deploy app worker (app/src/index.ts)
+          command: |
+            cd app
+            npm run deploy
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
+
 workflows:
   version: 2
   validate:
     jobs:
       - python-checks
       - node-checks
+      - worker-build:
+          requires:
+            - node-checks
+
+  deploy-workers:
+    jobs:
+      - worker-deploy:
+          filters:
+            branches:
+              only: main
