@@ -1,8 +1,21 @@
 {
-	"name": "<WORKER_NAME>",
+	"name": "ytstudio-app",
 	"main": "src/index.ts",
-	"compatibility_date": "<COMPATIBILITY_DATE>",
+	"compatibility_date": "2025-01-01",
 	"observability": {
 		"enabled": true,
+	},
+	"vars": {
+		"ENVIRONMENT": "development",
+		"CHANNEL_ID": "UCrjJP_SHUeCmqpTSHJCXkdA",
+	},
+	"env": {
+		"production": {
+			"name": "ytstudio-app",
+			"vars": {
+				"ENVIRONMENT": "production",
+				"CHANNEL_ID": "UCrjJP_SHUeCmqpTSHJCXkdA",
+			},
+		},
 	},
 }
