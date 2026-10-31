@@ -1,11 +1,14 @@
 {
+  "name": "yt-studio",
+  "version": "1.0.0",
+  "description": "<img width=\"1200\" height=\"675\" alt=\"gitcity-ruhdevops-landscape\" src=\"https://github.com/user-attachments/assets/78f27b70-ffce-47ca-8c56-22ce98cfc38e\" />",
+  "main": "github-build.js",
+  "type": "commonjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:watch": "vite build --watch",
     "preview": "vite preview",
-    "clean": "if exist dist rmdir /s /q dist && if exist node_modules\\.vite rmdir /s /q node_modules\\.vite",
-    "clean:all": "if exist dist rmdir /s /q dist && if exist node_modules rmdir /s /q node_modules",
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
@@ -13,18 +16,11 @@
     "enhance": "node scripts/auto-enhance.js",
     "deploy": "pnpm build && firebase deploy --only hosting",
     "deploy:firebase": "pnpm build && firebase deploy --only hosting",
-    "deploy:worker": "npx wrangler deploy src/youtube-worker.ts --name ytstudio",
+    "deploy:worker": "wrangler deploy src/youtube-worker.ts --name ytstudio",
     "deploy:all": "pnpm run deploy:firebase && pnpm run deploy:worker",
-    "worker:dev": "npx wrangler dev src/youtube-worker.ts",
-    "worker:tail": "npx wrangler tail",
-    "worker:types": "npx wrangler types",
-    "pages:dev": "npx wrangler pages dev dist --project-name=yt-studio",
-    "pages:deploy": "npx wrangler pages deploy dist --project-name=yt-studio",
-    "varlock": "varlock",
-    "varlock:load": "varlock load",
-    "env:validate": "npx varlock load",
-    "env:list": "npx varlock list",
-    "env:show": "npx varlock show",
+    "worker:dev": "wrangler dev src/youtube-worker.ts",
+    "worker:tail": "wrangler tail",
+    "worker:types": "wrangler types",
     "start": "node server.js",
     "dev:css": "sass --watch src/styles:dist/css",
     "dev:js": "esbuild src/index.js --bundle --outfile=dist/bundle.js --watch",
@@ -47,12 +43,12 @@
     "postcss": "^8.5.14",
     "rimraf": "^6.1.3",
     "tailwindcss": "^4.2.4",
-    "trigger-circleci-pipeline": "^1.12.1",
     "tsup": "^8.5.1",
     "typescript": "^5.1.6",
     "varlock": "^1.1.0",
     "vite": "^8.0.11",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.5",
+    "wrangler": "^4.90.0"
   },
   "dependencies": {
     "@circleci/circleci-config-sdk": "^0.8.0",
@@ -68,13 +64,8 @@
     "express-session": "^1.19.0",
     "ghas-fixer": "^1.3.0",
     "node-cloudflared-tunnel": "^1.0.10",
-    "trigger-circleci-pipeline": "^1.12.1",
-    "circletui": "^1.0.3"
+    "trigger-circleci-pipeline": "^1.12.1"
   },
-  "name": "yt-studio",
-  "version": "1.0.0",
-  "description": "<img width=\"1200\" height=\"675\" alt=\"gitcity-ruhdevops-landscape\" src=\"https://github.com/user-attachments/assets/78f27b70-ffce-47ca-8c56-22ce98cfc38e\" />",
-  "main": "github-build.js",
   "directories": {
     "test": "tests"
   },
@@ -85,7 +76,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/ruhdevops/YT-Studio/issues"
   },

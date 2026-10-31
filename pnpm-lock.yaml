@@ -22,7 +22,7 @@ importers:
         version: 22.0.1
       '@textlint/source-code-fixer':
         specifier: ^15.6.0
-        version: 15.6.0
+        version: 15.6.0(supports-color@5.5.0)
       '@varlock/cloudflare-integration':
         specifier: ^1.1.1
         version: 1.1.1(@cloudflare/vite-plugin@1.36.3(vite@8.0.11(@types/node@25.6.2)(esbuild@0.28.0))(workerd@1.20260507.1)(wrangler@4.90.0(@cloudflare/workers-types@4.20260508.1)))(varlock@1.1.0)(vite@8.0.11(@types/node@25.6.2)(esbuild@0.28.0))(wrangler@4.90.0(@cloudflare/workers-types@4.20260508.1))
@@ -37,10 +37,10 @@ importers:
         version: 1.0.3
       express:
         specifier: ^5.2.1
-        version: 5.2.1
+        version: 5.2.1(supports-color@5.5.0)
       express-session:
         specifier: ^1.19.0
-        version: 1.19.0
+        version: 1.19.0(supports-color@5.5.0)
       ghas-fixer:
         specifier: ^1.3.0
         version: 1.3.0
@@ -49,7 +49,7 @@ importers:
         version: 1.0.10
       trigger-circleci-pipeline:
         specifier: ^1.12.1
-        version: 1.12.1
+        version: 1.12.1(supports-color@5.5.0)
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20260508.1
@@ -95,7 +95,7 @@ importers:
         version: 4.2.4
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(postcss@8.5.14)(typescript@5.9.3)
+        version: 8.5.1(postcss@8.5.14)(supports-color@5.5.0)(typescript@5.9.3)
       typescript:
         specifier: ^5.1.6
         version: 5.9.3
@@ -108,6 +108,9 @@ importers:
       vitest:
         specifier: ^4.1.5
         version: 4.1.5(@types/node@25.6.2)(jsdom@29.1.1)(vite@8.0.11(@types/node@25.6.2)(esbuild@0.28.0))
+      wrangler:
+        specifier: ^4.90.0
+        version: 4.90.0(@cloudflare/workers-types@4.20260508.1)
 
 packages:
 
@@ -4166,7 +4169,7 @@ snapshots:
 
   '@textlint/ast-node-types@15.6.0': {}
 
-  '@textlint/source-code-fixer@15.6.0':
+  '@textlint/source-code-fixer@15.6.0(supports-color@5.5.0)':
     dependencies:
       '@textlint/types': 15.6.0
       debug: 4.4.3(supports-color@5.5.0)
@@ -4384,7 +4387,7 @@ snapshots:
 
   blake3-wasm@2.1.5: {}
 
-  body-parser@2.2.2:
+  body-parser@2.2.2(supports-color@5.5.0):
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
@@ -4641,9 +4644,11 @@ snapshots:
       es-errors: 1.3.0
       is-data-view: 1.0.2
 
-  debug@2.6.9:
+  debug@2.6.9(supports-color@5.5.0):
     dependencies:
       ms: 2.0.0
+    optionalDependencies:
+      supports-color: 5.5.0
 
   debug@4.4.3(supports-color@5.5.0):
     dependencies:
@@ -4867,11 +4872,11 @@ snapshots:
 
   expect-type@1.3.0: {}
 
-  express-session@1.19.0:
+  express-session@1.19.0(supports-color@5.5.0):
     dependencies:
       cookie: 0.7.2
       cookie-signature: 1.0.7
-      debug: 2.6.9
+      debug: 2.6.9(supports-color@5.5.0)
       depd: 2.0.0
       on-headers: 1.1.0
       parseurl: 1.3.3
@@ -4880,10 +4885,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  express@5.2.1:
+  express@5.2.1(supports-color@5.5.0):
     dependencies:
       accepts: 2.0.0
-      body-parser: 2.2.2
+      body-parser: 2.2.2(supports-color@5.5.0)
       content-disposition: 1.1.0
       content-type: 1.0.5
       cookie: 0.7.2
@@ -4893,7 +4898,7 @@ snapshots:
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
-      finalhandler: 2.1.1
+      finalhandler: 2.1.1(supports-color@5.5.0)
       fresh: 2.0.0
       http-errors: 2.0.1
       merge-descriptors: 2.0.0
@@ -4904,9 +4909,9 @@ snapshots:
       proxy-addr: 2.0.7
       qs: 6.15.1
       range-parser: 1.2.1
-      router: 2.2.0
-      send: 1.2.1
-      serve-static: 2.2.1
+      router: 2.2.0(supports-color@5.5.0)
+      send: 1.2.1(supports-color@5.5.0)
+      serve-static: 2.2.1(supports-color@5.5.0)
       statuses: 2.0.2
       type-is: 2.0.1
       vary: 1.1.2
@@ -4933,7 +4938,7 @@ snapshots:
     dependencies:
       to-regex-range: 5.0.1
 
-  finalhandler@2.1.1:
+  finalhandler@2.1.1(supports-color@5.5.0):
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
       encodeurl: 2.0.0
@@ -5836,7 +5841,7 @@ snapshots:
       '@rollup/rollup-win32-x64-msvc': 4.60.3
       fsevents: 2.3.3
 
-  router@2.2.0:
+  router@2.2.0(supports-color@5.5.0):
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
       depd: 2.0.0
@@ -5885,7 +5890,7 @@ snapshots:
 
   semver@7.8.0: {}
 
-  send@1.2.1:
+  send@1.2.1(supports-color@5.5.0):
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
       encodeurl: 2.0.0
@@ -5901,12 +5906,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  serve-static@2.2.1:
+  serve-static@2.2.1(supports-color@5.5.0):
     dependencies:
       encodeurl: 2.0.0
       escape-html: 1.0.3
       parseurl: 1.3.3
-      send: 1.2.1
+      send: 1.2.1(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -6201,7 +6206,7 @@ snapshots:
 
   tree-kill@1.2.2: {}
 
-  trigger-circleci-pipeline@1.12.1:
+  trigger-circleci-pipeline@1.12.1(supports-color@5.5.0):
     dependencies:
       '@actions/core': 1.11.1
       arg: 5.0.2
@@ -6214,7 +6219,7 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsup@8.5.1(postcss@8.5.14)(typescript@5.9.3):
+  tsup@8.5.1(postcss@8.5.14)(supports-color@5.5.0)(typescript@5.9.3):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.27.3)
       cac: 6.7.14
