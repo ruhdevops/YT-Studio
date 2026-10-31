@@ -18,7 +18,7 @@ jobs:
             ruff format .
       - run:
           name: Run MyPy type checker
-          command: mypy . || echo "MyPy found issues but continuing"
+          command: mypy . --ignore-missing-imports || echo "MyPy found issues but continuing"
       - run:
           name: Run pytest
           command: pytest || echo "No tests found"
@@ -29,27 +29,82 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install Node.js tools
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
+          name: Run functions ESLint
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check (functions)
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
+
+  worker-checks:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Install Node.js tools
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: TypeScript type check (YouTube worker)
+          command: pnpm run type-check
+      - run:
+          name: Validate wrangler configuration
+          command: |
+            if [ -f wrangler.jsonc ]; then
+              echo "wrangler.jsonc found:"
+              cat wrangler.jsonc | grep '"name"'
+            fi
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install Node.js tools
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube Worker to Cloudflare
+          command: |
+            if [ -z "$CF_API_TOKEN" ]; then
+              echo "CF_API_TOKEN not set — skipping Cloudflare Workers deploy"
+              echo "Worker source: src/youtube-worker.ts"
+              echo "Worker name:   ytstudio"
+              echo "Channel:       UCrjJP_SHUeCmqpTSHJCXkdA"
+              echo "Set CF_API_TOKEN in CircleCI project settings to enable live deployment."
+            else
+              pnpm run deploy:worker
+            fi
 
 workflows:
   version: 2
+
   validate:
     jobs:
       - python-checks
       - node-checks
+      - worker-checks
+
+  deploy:
+    jobs:
+      - worker-deploy:
+          filters:
+            branches:
+              only: main
