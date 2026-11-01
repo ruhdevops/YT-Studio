@@ -1,7 +1,7 @@
-import sys
+from pathlib import Path
 
-filepath = 'js/app.js'
-with open(filepath, 'r') as f:
+filepath = "js/app.js"
+with Path(filepath).open() as f:
     lines = f.readlines()
 
 # Part 1: DOM elements
@@ -31,5 +31,5 @@ for i, line in enumerate(lines):
             lines.insert(i + idx, new_line)
         break
 
-with open(filepath, 'w') as f:
+with Path(filepath).open("w") as f:
     f.writelines(lines)
