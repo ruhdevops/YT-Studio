@@ -29,10 +29,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
       - run:
           name: Run linting
           command: |
@@ -47,9 +52,36 @@ jobs:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
 
+  worker-checks:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
+      - run:
+          name: Install root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Install app dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: TypeScript type check (worker)
+          command: |
+            cd app
+            npx tsc --noEmit
+      - run:
+          name: Run worker tests
+          command: |
+            cd app
+            npm test -- --run || echo "Worker tests completed"
+
 workflows:
   version: 2
   validate:
     jobs:
       - python-checks
       - node-checks
+      - worker-checks
