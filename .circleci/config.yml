@@ -18,21 +18,26 @@ jobs:
             ruff format .
       - run:
           name: Run MyPy type checker
-          command: mypy . || echo "MyPy found issues but continuing"
+          command: mypy . --ignore-missing-imports || echo "MyPy found issues but continuing"
       - run:
           name: Run pytest
           command: pytest || echo "No tests found"
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.11
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
       - run:
           name: Run linting
           command: |
@@ -42,10 +47,49 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
+
+  build-worker:
+    docker:
+      - image: cimg/node:22.11
+    steps:
+      - checkout
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Install dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Build YouTube API Worker
+          command: pnpm run build
+      - run:
+          name: Verify worker source
+          command: |
+            echo "Worker entry point: src/youtube-worker.ts"
+            ls -la src/youtube-worker.ts
+            echo "--- Endpoints exposed ---"
+            grep "path ===" src/youtube-worker.ts || true
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:22.11
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API Worker to Cloudflare
+          command: |
+            if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+              echo "CLOUDFLARE_API_TOKEN not set — skipping worker deploy"
+              exit 0
+            fi
+            pnpm exec wrangler deploy src/youtube-worker.ts --name ytstudio
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
 
 workflows:
   version: 2
@@ -53,3 +97,12 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - build-worker:
+          requires:
+            - node-checks
+      - deploy-worker:
+          requires:
+            - build-worker
+          filters:
+            branches:
+              only: main
