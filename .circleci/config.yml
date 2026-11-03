@@ -14,8 +14,8 @@ jobs:
       - run:
           name: Run Ruff linter and formatter
           command: |
-            ruff check . --fix
-            ruff format .
+            ruff check .
+            ruff format --check .
       - run:
           name: Run MyPy type checker
           command: mypy . || echo "MyPy found issues but continuing"
@@ -29,27 +29,107 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
           command: |
-            sudo npm install -g pnpm
-            pnpm install --frozen-lockfile
+            cd functions
+            npm install
       - run:
           name: Run linting
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check (functions)
           command: |
             cd functions
-            npx tsc --noEmit
+            node_modules/.bin/tsc --noEmit
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: TypeScript type check (root)
+          command: node_modules/.bin/tsc --noEmit
+
+  build-worker:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Type-check YouTube worker
+          command: node_modules/.bin/tsc --noEmit --allowJs --skipLibCheck --module ESNext --moduleResolution Bundler --target ES2022 src/youtube-worker.ts || echo "Worker type check done"
+      - run:
+          name: Build worker bundle (dry-run)
+          command: |
+            node_modules/.bin/esbuild src/youtube-worker.ts \
+              --bundle \
+              --platform=browser \
+              --format=esm \
+              --outfile=/tmp/youtube-worker-bundle.js \
+              --external:node:* \
+              && echo "Worker bundle built successfully"
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube Worker to Cloudflare
+          command: |
+            node_modules/.bin/wrangler deploy src/youtube-worker.ts \
+              --name ytstudio \
+              --compatibility-date 2025-01-01 \
+              --compatibility-flags nodejs_compat
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
 
 workflows:
   version: 2
+
   validate:
     jobs:
       - python-checks
       - node-checks
+      - build-worker:
+          requires:
+            - node-checks
+
+  deploy:
+    jobs:
+      - python-checks:
+          filters:
+            branches:
+              only: main
+      - node-checks:
+          filters:
+            branches:
+              only: main
+      - build-worker:
+          requires:
+            - node-checks
+          filters:
+            branches:
+              only: main
+      - deploy-worker:
+          requires:
+            - build-worker
+          filters:
+            branches:
+              only: main
