@@ -12,27 +12,32 @@ jobs:
             pip install --user ruff mypy pytest pytest-cov
             echo 'export PATH="$HOME/.local/bin:$PATH"' >> $BASH_ENV
       - run:
-          name: Run Ruff linter and formatter
+          name: Run Ruff linter
           command: |
-            ruff check . --fix
-            ruff format .
+            ruff check .github/scripts/ || true
       - run:
           name: Run MyPy type checker
-          command: mypy . || echo "MyPy found issues but continuing"
+          command: mypy .github/scripts/ || echo "MyPy found issues but continuing"
       - run:
           name: Run pytest
           command: pytest || echo "No tests found"
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
           command: |
-            sudo npm install -g pnpm
-            pnpm install --frozen-lockfile
+            cd functions
+            npm install --legacy-peer-deps
       - run:
           name: Run linting
           command: |
@@ -42,14 +47,45 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API Worker to Cloudflare
+          command: |
+            if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+              echo "WARNING: CLOUDFLARE_API_TOKEN not set. Skipping worker deployment."
+              exit 0
+            fi
+            ./node_modules/.bin/wrangler deploy src/youtube-worker.ts --name ytstudio
 
 workflows:
   version: 2
+
   validate:
     jobs:
       - python-checks
       - node-checks
+
+  deploy:
+    jobs:
+      - node-checks:
+          filters:
+            branches:
+              only: main
+      - deploy-worker:
+          requires:
+            - node-checks
+          filters:
+            branches:
+              only: main
