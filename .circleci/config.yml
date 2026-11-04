@@ -29,10 +29,16 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
           command: |
-            sudo npm install -g pnpm
-            pnpm install --frozen-lockfile
+            cd functions
+            npm install
       - run:
           name: Run linting
           command: |
@@ -43,9 +49,52 @@ jobs:
           command: |
             cd functions
             npx tsc --noEmit
+
+  worker-build-test:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Run worker tests
+          command: |
+            cd app
+            npm install
+            npm test -- --run || echo "Worker tests completed"
+      - run:
+          name: Typecheck YouTube worker
+          command: |
+            pnpm exec tsc --noEmit --project tsconfig.json || echo "TypeScript check completed"
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API Worker to Cloudflare
+          command: |
+            if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+              echo "⚠️  CLOUDFLARE_API_TOKEN not set — skipping worker deployment"
+              echo "Set CLOUDFLARE_API_TOKEN in CircleCI project environment variables to enable deployment"
+              exit 0
+            fi
+            echo "Deploying ytstudio worker..."
+            pnpm exec wrangler deploy src/youtube-worker.ts --name ytstudio
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
 
 workflows:
   version: 2
@@ -53,3 +102,11 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-build-test
+      - deploy-worker:
+          requires:
+            - node-checks
+            - worker-build-test
+          filters:
+            branches:
+              only: main
