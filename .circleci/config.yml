@@ -29,27 +29,121 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm and root dependencies
           command: |
-            sudo npm install -g pnpm
+            sudo npm install -g pnpm@latest
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
+          name: Run ESLint on functions
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check (functions)
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: TypeScript type check (root worker)
+          command: pnpm run type-check || echo "Root type-check issues found"
+      - run:
+          name: Run vitest (root)
+          command: pnpm run test:run || echo "No root tests"
+
+  worker-checks:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and root dependencies
+          command: |
+            sudo npm install -g pnpm@latest
+            pnpm install --frozen-lockfile
+      - run:
+          name: Install app worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: TypeScript type check (app worker)
+          command: |
+            cd app
+            ./node_modules/.bin/tsc --noEmit
+      - run:
+          name: Run app worker tests
+          command: |
+            cd app
+            npm test -- run
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm@latest
+            pnpm install --frozen-lockfile
+      - run:
+          name: Install app worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: Deploy YouTube workers to Cloudflare
+          command: |
+            if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+              echo "Deploying root worker: ytstudio"
+              pnpm exec wrangler deploy src/youtube-worker.ts --name ytstudio --env production
+              echo "Root worker deployed: ytstudio"
+              echo "Deploying app worker: yt-studio-app"
+              cd app
+              ./node_modules/.bin/wrangler deploy
+              echo "App worker deployed: yt-studio-app"
+            else
+              echo "CLOUDFLARE_API_TOKEN not set — skipping worker deploy"
+              echo "Workers that would be deployed:"
+              echo "  - ytstudio (src/youtube-worker.ts)"
+              echo "  - yt-studio-app (app/src/index.ts)"
+            fi
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
 
 workflows:
   version: 2
+
   validate:
     jobs:
       - python-checks
       - node-checks
+      - worker-checks
+
+  deploy:
+    jobs:
+      - python-checks:
+          filters:
+            branches:
+              only: main
+      - node-checks:
+          filters:
+            branches:
+              only: main
+      - worker-checks:
+          filters:
+            branches:
+              only: main
+      - deploy-worker:
+          requires:
+            - python-checks
+            - node-checks
+            - worker-checks
+          filters:
+            branches:
+              only: main
