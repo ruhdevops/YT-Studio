@@ -29,23 +29,63 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
       - run:
           name: Run linting
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check (functions)
           command: |
             cd functions
             npx tsc --noEmit
       - run:
+          name: TypeScript type check (worker)
+          command: ./node_modules/.bin/tsc --noEmit
+      - run:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install root dependencies
+          command: |
+            sudo npm install -g pnpm wrangler
+            pnpm install --frozen-lockfile
+      - run:
+          name: Validate YouTube worker TypeScript
+          command: ./node_modules/.bin/tsc --noEmit
+      - run:
+          name: Fetch YouTube API v3 channel data (validate)
+          command: |
+            echo "Validating YouTube API v3 channel endpoint..."
+            CHANNEL_ID="UCrjJP_SHUeCmqpTSHJCXkdA"
+            if [ -n "$YOUTUBE_API_KEY" ]; then
+              curl -fsS "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${CHANNEL_ID}&key=${YOUTUBE_API_KEY}" \
+                | python3 -c "import sys,json; d=json.load(sys.stdin); print('Channel:', d['items'][0]['snippet']['title'])" \
+                || echo "YouTube API fetch skipped (key not configured)"
+            else
+              echo "YOUTUBE_API_KEY not set — skipping live fetch, worker will use demo data"
+            fi
+      - run:
+          name: Deploy YouTube worker to Cloudflare
+          command: |
+            wrangler deploy src/youtube-worker.ts --name ytstudio --env production
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
 
 workflows:
   version: 2
@@ -53,3 +93,10 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+
+  deploy-worker:
+    jobs:
+      - worker-deploy:
+          filters:
+            branches:
+              only: main
