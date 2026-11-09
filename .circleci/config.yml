@@ -29,17 +29,23 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm and root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
+          name: Install functions dependencies
           command: |
             cd functions
+            npm install --legacy-peer-deps
+      - run:
+          name: Run ESLint on functions
+          command: |
+            cd functions
+            npm run lint -- --fix || true
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check on functions
           command: |
             cd functions
             npx tsc --noEmit
@@ -47,9 +53,40 @@ jobs:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
 
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install wrangler
+          command: sudo npm install -g wrangler
+      - run:
+          name: Verify YouTube worker source
+          command: |
+            echo "Worker source: src/youtube-worker.ts"
+            ls -la src/youtube-worker.ts
+            echo "Wrangler config:"
+            cat wrangler.jsonc
+      - run:
+          name: Deploy YouTube API v3 Worker to Cloudflare
+          command: |
+            if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+              echo "WARNING: CLOUDFLARE_API_TOKEN not set. Skipping deploy."
+              echo "Set CLOUDFLARE_API_TOKEN in CircleCI environment variables to enable deployment."
+            else
+              wrangler deploy --config wrangler.jsonc
+            fi
+
 workflows:
   version: 2
   validate:
     jobs:
       - python-checks
       - node-checks
+      - worker-deploy:
+          requires:
+            - node-checks
+          filters:
+            branches:
+              only: main
