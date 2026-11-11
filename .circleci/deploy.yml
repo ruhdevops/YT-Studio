@@ -6,13 +6,8 @@ version: 2.1
 # Reusable commands
 commands:
   setup-node-pnpm:
-    description: "Install Node.js and pnpm"
+    description: "Install pnpm and project dependencies"
     steps:
-      - run:
-          name: Install Node.js 20
-          command: |
-            curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-            sudo apt-get install -y nodejs
       - run:
           name: Install pnpm
           command: sudo npm install -g pnpm
@@ -56,10 +51,13 @@ commands:
 jobs:
   lint:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
     steps:
       - checkout
       - setup-node-pnpm
+      - run:
+          name: Install functions dependencies
+          command: cd functions && npm install
       - run:
           name: ESLint check
           command: |
@@ -69,17 +67,17 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
-      - run:
-          name: Quality GC check
-          command: npx quality-gc run
+            ./node_modules/.bin/tsc --noEmit
 
   build:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
     steps:
       - checkout
       - setup-node-pnpm
+      - run:
+          name: Install functions dependencies
+          command: cd functions && npm install
       - run:
           name: Build Firebase Functions
           command: |
@@ -92,10 +90,13 @@ jobs:
 
   test:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
     steps:
       - checkout
       - setup-node-pnpm
+      - run:
+          name: Install functions dependencies
+          command: cd functions && npm install
       - run:
           name: Run unit tests
           command: |
@@ -104,11 +105,11 @@ jobs:
       - run:
           name: Run integration tests (emulators)
           command: |
-            npx firebase emulators:exec --only firestore,auth "npm run test:integration" || echo "Integration tests skipped"
+            ./node_modules/.bin/firebase emulators:exec --only firestore,auth "npm run test:integration" || echo "Integration tests skipped"
 
   deploy-preview:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
     steps:
       - checkout
       - setup-node-pnpm
@@ -125,7 +126,7 @@ jobs:
 
   deploy-production:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.19
     steps:
       - checkout
       - setup-node-pnpm
