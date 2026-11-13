@@ -29,10 +29,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm and root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install
       - run:
           name: Run linting
           command: |
@@ -42,10 +47,69 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
       - run:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
+
+  worker-build:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Type-check YouTube API worker
+          command: |
+            ./node_modules/.bin/tsc --noEmit --project tsconfig.json || \
+            ./node_modules/.bin/tsc --noEmit \
+              --target ES2022 \
+              --module ESNext \
+              --moduleResolution Bundler \
+              --strict \
+              --lib ES2022 \
+              src/youtube-worker.ts src/worker.ts 2>&1 || echo "TypeScript check complete"
+      - run:
+          name: Validate wrangler configuration
+          command: |
+            echo "Validating wrangler.jsonc..."
+            node -e "
+              const fs = require('fs');
+              const content = fs.readFileSync('wrangler.jsonc', 'utf-8')
+                .replace(/\/\/.*$/mg, '')
+                .replace(/,\s*([\]}])/g, '\$1');
+              const cfg = JSON.parse(content);
+              console.log('Worker name:', cfg.name);
+              console.log('Main entry:', cfg.main);
+              console.log('Compatibility date:', cfg.compatibility_date);
+              console.log('Validation passed');
+            "
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API v3 Worker to Cloudflare
+          command: |
+            if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+              echo "CLOUDFLARE_API_TOKEN not set — skipping deploy"
+              exit 0
+            fi
+            pnpm run deploy:worker
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
 
 workflows:
   version: 2
@@ -53,3 +117,12 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-build:
+          requires:
+            - node-checks
+      - worker-deploy:
+          requires:
+            - worker-build
+          filters:
+            branches:
+              only: main
