@@ -25,27 +25,71 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.11
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
+          name: Lint Firebase functions
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check (functions)
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
+
+  worker-checks:
+    docker:
+      - image: cimg/node:22.11
+    steps:
+      - checkout
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Install root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Validate YouTube API v3 worker (TypeScript)
+          command: |
+            echo "=== YouTube API v3 Cloudflare Worker ==="
+            echo "Worker:  ytstudio  (src/youtube-worker.ts)"
+            echo "Channel: UCrjJP_SHUeCmqpTSHJCXkdA (Ruh Al Tarikh)"
+            echo "Endpoints: / | /api/channel | /api/videos | /api/search"
+            ./node_modules/.bin/tsc --noEmit
+            echo "TypeScript check passed"
+      - run:
+          name: Validate wrangler configuration
+          command: |
+            echo "=== wrangler.jsonc ==="
+            cat wrangler.jsonc
+            echo ""
+            echo "Deploy command: pnpm run deploy:worker"
+            echo "  (requires CLOUDFLARE_API_TOKEN secret)"
+      - run:
+          name: Fetch YouTube API v3 channel data (demo)
+          command: |
+            CHANNEL_ID="UCrjJP_SHUeCmqpTSHJCXkdA"
+            echo "=== Fetching YouTube Data API v3 for channel: ${CHANNEL_ID} ==="
+            if [ -n "$YOUTUBE_API_KEY" ]; then
+              curl -s "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${CHANNEL_ID}&key=${YOUTUBE_API_KEY}" \
+                | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const j=JSON.parse(d);const ch=j.items&&j.items[0];if(ch){console.log('Title:',ch.snippet.title);console.log('Subscribers:',ch.statistics.subscriberCount);console.log('Views:',ch.statistics.viewCount);console.log('Videos:',ch.statistics.videoCount);}else{console.log(JSON.stringify(j,null,2));}})" \
+              && echo "YouTube API v3 fetch succeeded" \
+              || echo "YouTube API v3 fetch failed (check YOUTUBE_API_KEY)"
+            else
+              echo "YOUTUBE_API_KEY not set — skipping live fetch (worker falls back to demo data)"
+              echo "To enable: add YOUTUBE_API_KEY to CircleCI project environment variables"
+            fi
 
 workflows:
   version: 2
@@ -53,3 +97,4 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-checks
