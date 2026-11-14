@@ -19,6 +19,11 @@ commands:
       - run:
           name: Install dependencies
           command: pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install
 
   setup-firebase:
     description: "Install Firebase CLI and dependencies"

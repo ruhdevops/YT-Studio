@@ -7,23 +7,39 @@ import {
 import { describe, it, expect } from "vitest";
 import worker from "../src/index";
 
-// For now, you'll need to do something like this to get a correctly-typed
-// `Request` to pass to `worker.fetch()`.
 const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 
-describe("Hello World worker", () => {
-	it("responds with Hello World! (unit style)", async () => {
-		const request = new IncomingRequest("http://example.com");
-		// Create an empty context to pass to `worker.fetch()`.
+describe("YT Studio worker", () => {
+	it("responds with health status (unit style)", async () => {
+		const request = new IncomingRequest("http://example.com/");
 		const ctx = createExecutionContext();
 		const response = await worker.fetch(request, env, ctx);
-		// Wait for all `Promise`s passed to `ctx.waitUntil()` to settle before running test assertions
 		await waitOnExecutionContext(ctx);
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+		const body = await response.json() as { status: string };
+		expect(body.status).toBe("healthy");
 	});
 
-	it("responds with Hello World! (integration style)", async () => {
-		const response = await SELF.fetch("https://example.com");
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+	it("responds with health status (integration style)", async () => {
+		const response = await SELF.fetch("https://example.com/");
+		const body = await response.json() as { status: string };
+		expect(body.status).toBe("healthy");
+	});
+
+	it("returns demo videos when no API key is set", async () => {
+		const request = new IncomingRequest("http://example.com/api/videos");
+		const ctx = createExecutionContext();
+		const response = await worker.fetch(request, env, ctx);
+		await waitOnExecutionContext(ctx);
+		const body = await response.json() as { isDemo: boolean; videos: unknown[] };
+		expect(body.isDemo).toBe(true);
+		expect(body.videos.length).toBeGreaterThan(0);
+	});
+
+	it("returns 404 for unknown routes", async () => {
+		const request = new IncomingRequest("http://example.com/unknown");
+		const ctx = createExecutionContext();
+		const response = await worker.fetch(request, env, ctx);
+		await waitOnExecutionContext(ctx);
+		expect(response.status).toBe(404);
 	});
 });
