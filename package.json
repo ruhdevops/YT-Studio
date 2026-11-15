@@ -47,7 +47,6 @@
     "postcss": "^8.5.14",
     "rimraf": "^6.1.3",
     "tailwindcss": "^4.2.4",
-    "trigger-circleci-pipeline": "^1.12.1",
     "tsup": "^8.5.1",
     "typescript": "^5.1.6",
     "varlock": "^1.1.0",
@@ -68,8 +67,7 @@
     "express-session": "^1.19.0",
     "ghas-fixer": "^1.3.0",
     "node-cloudflared-tunnel": "^1.0.10",
-    "trigger-circleci-pipeline": "^1.12.1",
-    "circletui": "^1.0.3"
+    "trigger-circleci-pipeline": "^1.12.1"
   },
   "name": "yt-studio",
   "version": "1.0.0",

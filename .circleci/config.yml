@@ -29,10 +29,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm and root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
       - run:
           name: Run linting
           command: |
@@ -42,10 +47,29 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
       - run:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Fetch YouTube API v3 channel info and deploy worker
+          command: |
+            echo "Deploying YouTube API v3 Worker (ytstudio) to Cloudflare Workers..."
+            echo "Channel: UCrjJP_SHUeCmqpTSHJCXkdA"
+            pnpm exec wrangler deploy src/youtube-worker.ts \
+              --name ytstudio \
+              --env production
 
 workflows:
   version: 2
@@ -53,3 +77,9 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - deploy-worker:
+          requires:
+            - node-checks
+          filters:
+            branches:
+              only: main
