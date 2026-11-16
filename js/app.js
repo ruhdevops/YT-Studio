@@ -114,6 +114,8 @@ const DOM = {
     episodesSection: document.getElementById('episodesSection'),
     episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
     episodesSection: document.getElementById('episodesSection'),
+    episodesNavBtn: document.querySelector('[data-action="scroll-to-episodes"]'),
+    episodesSection: document.getElementById('episodesSection'),
     menuToggle: document.getElementById('menuToggleBtn'),
     scrollToTop: document.getElementById('scrollToTop'),
 
@@ -1033,6 +1035,17 @@ function bindEvents() {
     });
 
     // Hero buttons
+    // Navbar Episodes Scroll
+    if (DOM.episodesNavBtn && DOM.episodesSection) {
+        DOM.episodesNavBtn.addEventListener('click', () => {
+            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });
+            if (document.body.classList.contains('mobile-nav-active')) {
+                document.body.classList.remove('mobile-nav-active');
+                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
     // Navbar Episodes Scroll
     if (DOM.episodesNavBtn && DOM.episodesSection) {
         DOM.episodesNavBtn.addEventListener('click', () => {
