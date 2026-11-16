@@ -29,17 +29,22 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm and root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --no-fund --no-audit
+      - run:
+          name: Run ESLint on functions
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check for functions
           command: |
             cd functions
             npx tsc --noEmit
@@ -47,9 +52,29 @@ jobs:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
 
+  worker-checks:
+    docker:
+      - image: cimg/node:22.19
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install app worker dependencies
+          command: |
+            cd app
+            pnpm install
+      - run:
+          name: Run Cloudflare Worker tests
+          command: |
+            cd app
+            pnpm test
+
 workflows:
   version: 2
   validate:
     jobs:
       - python-checks
       - node-checks
+      - worker-checks
