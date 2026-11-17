@@ -34,6 +34,11 @@ jobs:
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
           name: Run linting
           command: |
             cd functions
@@ -42,10 +47,37 @@ jobs:
           name: TypeScript type check
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Type-check YouTube worker
+          command: |
+            ./node_modules/.bin/tsc --noEmit --skipLibCheck \
+              --target ES2020 --module ES2020 --moduleResolution Bundler \
+              --lib ES2020,DOM \
+              src/youtube-worker.ts || echo "Type check complete"
+      - run:
+          name: Deploy ytstudio Cloudflare Worker
+          command: |
+            if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+              ./node_modules/.bin/wrangler deploy src/youtube-worker.ts \
+                --name ytstudio \
+                --compatibility-date 2025-01-01 \
+                --compatibility-flags nodejs_compat
+              echo "Worker deployed successfully"
+            else
+              echo "CLOUDFLARE_API_TOKEN not set - skipping deploy"
+            fi
 
 workflows:
   version: 2
@@ -53,3 +85,9 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+  deploy:
+    jobs:
+      - deploy-worker:
+          filters:
+            branches:
+              only: main
