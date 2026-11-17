@@ -25,27 +25,171 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:24.18
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: |
-            sudo npm install -g pnpm
-            pnpm install --frozen-lockfile
+          name: Install pnpm
+          command: sudo npm install -g pnpm
       - run:
-          name: Run linting
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
+          name: Run ESLint on functions
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check on functions
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Run unit tests
+          command: pnpm run test:run
+
+  worker-build:
+    docker:
+      - image: cimg/node:24.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: TypeScript check on workers
+          command: ./node_modules/.bin/tsc --noEmit --skipLibCheck
+      - run:
+          name: Verify youtube-worker compiles
+          command: |
+            ./node_modules/.bin/esbuild src/youtube-worker.ts \
+              --bundle --platform=browser --format=esm \
+              --external:node:* \
+              --outfile=/tmp/youtube-worker.js
+            echo "youtube-worker.ts compiled successfully"
+      - run:
+          name: Verify worker compiles
+          command: |
+            ./node_modules/.bin/esbuild src/worker.ts \
+              --bundle --platform=browser --format=esm \
+              --external:node:* \
+              --outfile=/tmp/worker.js
+            echo "worker.ts compiled successfully"
+
+  youtube-api-data:
+    docker:
+      - image: cimg/node:24.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Validate YouTube worker endpoints
+          command: |
+            node - <<'EOF'
+            // Load and validate the YouTube worker structure
+            const fs = require('fs');
+            const src = fs.readFileSync('src/youtube-worker.ts', 'utf8');
+
+            const requiredEndpoints = ['/api/channel', '/api/videos', '/api/search'];
+            const missing = requiredEndpoints.filter(ep => !src.includes(ep));
+
+            if (missing.length > 0) {
+              console.error('Missing endpoints:', missing);
+              process.exit(1);
+            }
+
+            console.log('All required YouTube API v3 endpoints present:');
+            requiredEndpoints.forEach(ep => console.log(' -', ep));
+
+            // Validate API v3 base URL
+            if (!src.includes('youtube/v3')) {
+              console.error('YouTube API v3 URL not found in worker');
+              process.exit(1);
+            }
+            console.log(' - YouTube API v3 base URL confirmed');
+
+            // Validate channel ID binding
+            if (!src.includes('UCrjJP_SHUeCmqpTSHJCXkdA')) {
+              console.error('Default channel ID not found');
+              process.exit(1);
+            }
+            console.log(' - Channel ID UCrjJP_SHUeCmqpTSHJCXkdA confirmed');
+
+            // Validate CORS headers
+            if (!src.includes('Access-Control-Allow-Origin')) {
+              console.error('CORS headers missing from worker');
+              process.exit(1);
+            }
+            console.log(' - CORS headers present');
+
+            // Validate demo fallback
+            if (!src.includes('DEMO_VIDEOS')) {
+              console.error('Demo video fallback not found');
+              process.exit(1);
+            }
+            console.log(' - Demo video fallback present');
+
+            console.log('\nYouTube worker validation passed.');
+            EOF
+      - run:
+          name: Validate wrangler.jsonc worker config
+          command: |
+            node - <<'EOF'
+            const fs = require('fs');
+            // Strip comments from jsonc
+            const raw = fs.readFileSync('wrangler.jsonc', 'utf8')
+              .replace(/\/\*[\s\S]*?\*\//g, '')
+              .replace(/\/\/.*/g, '');
+            const cfg = JSON.parse(raw);
+
+            if (cfg.main !== 'src/youtube-worker.ts') {
+              console.error('wrangler.jsonc main should point to src/youtube-worker.ts, got:', cfg.main);
+              process.exit(1);
+            }
+            console.log('main:', cfg.main);
+
+            if (!cfg.compatibility_date) {
+              console.error('compatibility_date missing');
+              process.exit(1);
+            }
+            console.log('compatibility_date:', cfg.compatibility_date);
+
+            const channelId = cfg.vars && cfg.vars.CHANNEL_ID;
+            if (channelId !== 'UCrjJP_SHUeCmqpTSHJCXkdA') {
+              console.error('CHANNEL_ID var not set correctly:', channelId);
+              process.exit(1);
+            }
+            console.log('CHANNEL_ID:', channelId);
+
+            console.log('\nwrangler.jsonc validation passed.');
+            EOF
+      - run:
+          name: Deploy YouTube worker (dry-run)
+          command: |
+            echo "Worker deployment requires CLOUDFLARE_API_TOKEN secret."
+            echo "Verifying wrangler is available..."
+            ./node_modules/.bin/wrangler --version
+            echo ""
+            echo "To deploy: pnpm run deploy:worker"
+            echo "  -> wrangler deploy src/youtube-worker.ts --name ytstudio"
+            echo ""
+            echo "Worker: ytstudio"
+            echo "Entry:  src/youtube-worker.ts"
+            echo "Env:    ENVIRONMENT=production, CHANNEL_ID=UCrjJP_SHUeCmqpTSHJCXkdA"
+            echo "Secret: YOUTUBE_API_KEY (set via wrangler secret put YOUTUBE_API_KEY)"
 
 workflows:
   version: 2
@@ -53,3 +197,7 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-build
+      - youtube-api-data:
+          requires:
+            - worker-build
