@@ -68,9 +68,7 @@
     "express-session": "^1.19.0",
     "ghas-fixer": "^1.3.0",
     "node-cloudflared-tunnel": "^1.0.10",
-    "trigger-circleci-pipeline": "^1.12.1",
-    "circletui": "^1.0.3"
-  },
+    "trigger-circleci-pipeline": "^1.12.1"},
   "name": "yt-studio",
   "version": "1.0.0",
   "description": "<img width=\"1200\" height=\"675\" alt=\"gitcity-ruhdevops-landscape\" src=\"https://github.com/user-attachments/assets/78f27b70-ffce-47ca-8c56-22ce98cfc38e\" />",

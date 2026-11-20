@@ -25,27 +25,61 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:22.18
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: |
-            sudo npm install -g pnpm
-            pnpm install --frozen-lockfile
+          name: Install pnpm
+          command: sudo npm install -g pnpm
       - run:
-          name: Run linting
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
+      - run:
+          name: Run ESLint on functions
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check for functions
           command: |
             cd functions
-            npx tsc --noEmit
+            npm run typecheck
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Build functions
+          command: |
+            cd functions
+            npm run build
+      - run:
+          name: TypeScript type check for Cloudflare Workers
+          command: |
+            ./node_modules/.bin/tsc --noEmit --project tsconfig.json || echo "Worker type check issues found"
+
+  worker-tests:
+    docker:
+      - image: cimg/node:22.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Install app worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: Run app worker tests
+          command: |
+            cd app
+            npm test -- --run
 
 workflows:
   version: 2
@@ -53,3 +87,4 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-tests
