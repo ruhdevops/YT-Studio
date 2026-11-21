@@ -13,7 +13,7 @@
     "enhance": "node scripts/auto-enhance.js",
     "deploy": "pnpm build && firebase deploy --only hosting",
     "deploy:firebase": "pnpm build && firebase deploy --only hosting",
-    "deploy:worker": "npx wrangler deploy src/youtube-worker.ts --name ytstudio",
+    "deploy:worker": "wrangler deploy src/youtube-worker.ts --name ytstudio --env=\"\"",
     "deploy:all": "pnpm run deploy:firebase && pnpm run deploy:worker",
     "worker:dev": "npx wrangler dev src/youtube-worker.ts",
     "worker:tail": "npx wrangler tail",
