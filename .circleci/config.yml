@@ -14,8 +14,8 @@ jobs:
       - run:
           name: Run Ruff linter and formatter
           command: |
-            ruff check . --fix
-            ruff format .
+            ruff check .
+            ruff format --check .
       - run:
           name: Run MyPy type checker
           command: mypy . || echo "MyPy found issues but continuing"
@@ -29,23 +29,56 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
       - run:
           name: Run linting
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check (functions)
           command: |
             cd functions
             npx tsc --noEmit
       - run:
+          name: TypeScript type check (root worker)
+          command: pnpm run type-check || echo "Root type check issues found"
+      - run:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Validate worker TypeScript
+          command: pnpm run type-check
+      - run:
+          name: Deploy Cloudflare Worker
+          command: |
+            if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+              echo "CLOUDFLARE_API_TOKEN not set — skipping worker deployment"
+              exit 0
+            fi
+            pnpm exec wrangler deploy src/youtube-worker.ts --name ytstudio
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+            CLOUDFLARE_ACCOUNT_ID: $CLOUDFLARE_ACCOUNT_ID
 
 workflows:
   version: 2
@@ -53,3 +86,9 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-deploy:
+          requires:
+            - node-checks
+          filters:
+            branches:
+              only: main
