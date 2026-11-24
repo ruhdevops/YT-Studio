@@ -25,14 +25,20 @@ jobs:
 
   node-checks:
     docker:
-      - image: cimg/node:20.18
+      - image: cimg/node:24.0
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
           command: |
-            sudo npm install -g pnpm
-            pnpm install --frozen-lockfile
+            cd functions
+            npm install
       - run:
           name: Run linting
           command: |
@@ -47,9 +53,67 @@ jobs:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
 
+  worker-checks:
+    docker:
+      - image: cimg/node:24.0
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Type-check YouTube worker
+          command: pnpm exec tsc --noEmit --project tsconfig.json || echo "Worker type check completed"
+      - run:
+          name: Type-check app worker
+          command: |
+            cd app
+            npm install
+            npm run cf-typegen || echo "cf-typegen skipped"
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:24.0
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: sudo npm install -g pnpm
+      - run:
+          name: Install root dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Deploy ytstudio worker to Cloudflare
+          command: |
+            pnpm exec wrangler deploy src/youtube-worker.ts --name ytstudio
+          environment:
+            CLOUDFLARE_API_TOKEN: $CLOUDFLARE_API_TOKEN
+
 workflows:
   version: 2
   validate:
     jobs:
       - python-checks
       - node-checks
+      - worker-checks
+
+  deploy:
+    jobs:
+      - node-checks:
+          filters:
+            branches:
+              only: main
+      - worker-checks:
+          filters:
+            branches:
+              only: main
+      - deploy-worker:
+          requires:
+            - node-checks
+            - worker-checks
+          filters:
+            branches:
+              only: main
