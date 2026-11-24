@@ -7,23 +7,59 @@ import {
 import { describe, it, expect } from "vitest";
 import worker from "../src/index";
 
-// For now, you'll need to do something like this to get a correctly-typed
-// `Request` to pass to `worker.fetch()`.
 const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 
-describe("Hello World worker", () => {
-	it("responds with Hello World! (unit style)", async () => {
-		const request = new IncomingRequest("http://example.com");
-		// Create an empty context to pass to `worker.fetch()`.
+describe("YouTube API v3 Worker", () => {
+	it("responds with healthy status on / (unit style)", async () => {
+		const request = new IncomingRequest("http://example.com/");
 		const ctx = createExecutionContext();
 		const response = await worker.fetch(request, env, ctx);
-		// Wait for all `Promise`s passed to `ctx.waitUntil()` to settle before running test assertions
 		await waitOnExecutionContext(ctx);
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+		expect(response.status).toBe(200);
+		const body = await response.json() as Record<string, unknown>;
+		expect(body.status).toBe("healthy");
+		expect(body.worker).toBe("ytstudio-app");
 	});
 
-	it("responds with Hello World! (integration style)", async () => {
-		const response = await SELF.fetch("https://example.com");
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+	it("responds with healthy status on / (integration style)", async () => {
+		const response = await SELF.fetch("https://example.com/");
+		expect(response.status).toBe(200);
+		const body = await response.json() as Record<string, unknown>;
+		expect(body.status).toBe("healthy");
+	});
+
+	it("returns demo videos on /api/videos when no API key", async () => {
+		const request = new IncomingRequest("https://example.com/api/videos");
+		const ctx = createExecutionContext();
+		const response = await worker.fetch(request, env, ctx);
+		await waitOnExecutionContext(ctx);
+		expect(response.status).toBe(200);
+		const body = await response.json() as Record<string, unknown>;
+		expect(body.isDemo).toBe(true);
+		expect(Array.isArray(body.videos)).toBe(true);
+	});
+
+	it("returns 400 on /api/search without query", async () => {
+		const request = new IncomingRequest("https://example.com/api/search");
+		const ctx = createExecutionContext();
+		const response = await worker.fetch(request, env, ctx);
+		await waitOnExecutionContext(ctx);
+		expect(response.status).toBe(400);
+	});
+
+	it("returns 404 for unknown routes", async () => {
+		const request = new IncomingRequest("https://example.com/unknown");
+		const ctx = createExecutionContext();
+		const response = await worker.fetch(request, env, ctx);
+		await waitOnExecutionContext(ctx);
+		expect(response.status).toBe(404);
+	});
+
+	it("handles CORS preflight OPTIONS", async () => {
+		const request = new IncomingRequest("https://example.com/api/videos", { method: "OPTIONS" });
+		const ctx = createExecutionContext();
+		const response = await worker.fetch(request, env, ctx);
+		await waitOnExecutionContext(ctx);
+		expect(response.status).toBe(204);
 	});
 });
