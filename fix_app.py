@@ -1,7 +1,7 @@
-import sys
+from pathlib import Path
 
-filepath = 'js/app.js'
-with open(filepath, 'r') as f:
+filepath = Path("js/app.js")
+with filepath.open() as f:
     lines = f.readlines()
 
 # Part 1: DOM elements
@@ -20,16 +20,16 @@ for i, line in enumerate(lines):
             "        DOM.episodesNavBtn.addEventListener('click', () => {\n",
             "            DOM.episodesSection.scrollIntoView({ behavior: 'smooth' });\n",
             "            if (document.body.classList.contains('mobile-nav-active')) {\n",
-                "                document.body.classList.remove('mobile-nav-active');\n",
+            "                document.body.classList.remove('mobile-nav-active');\n",
             "                if (DOM.menuToggle) DOM.menuToggle.setAttribute('aria-expanded', 'false');\n",
             "            }\n",
             "        });\n",
             "    }\n",
-            "\n"
+            "\n",
         ]
         for idx, new_line in enumerate(scroll_listener):
             lines.insert(i + idx, new_line)
         break
 
-with open(filepath, 'w') as f:
+with filepath.open("w") as f:
     f.writelines(lines)
