@@ -29,23 +29,54 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm and root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
       - run:
-          name: Run linting
+          name: Patch and install functions dependencies
+          command: |
+            cd functions
+            node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+              pkg.devDependencies.typescript = '^5.6.0';
+              const deps = {};
+              deps['firebase-admin'] = '^13.9.0';
+              for (const [k, v] of Object.entries(pkg.dependencies)) {
+                if (k !== 'firebase-admin') deps[k] = v;
+              }
+              pkg.dependencies = deps;
+              fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+            "
+            npm install
+      - run:
+          name: Run ESLint on functions
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check on functions
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
       - run:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
+
+  deploy-worker:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API Worker to Cloudflare
+          command: ./node_modules/.bin/wrangler deploy src/youtube-worker.ts --name ytstudio
 
 workflows:
   version: 2
@@ -53,3 +84,9 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - deploy-worker:
+          requires:
+            - node-checks
+          filters:
+            branches:
+              only: main
