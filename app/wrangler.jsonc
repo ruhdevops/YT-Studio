@@ -1,7 +1,7 @@
 {
-	"name": "<WORKER_NAME>",
+	"name": "yt-studio-worker",
 	"main": "src/index.ts",
-	"compatibility_date": "<COMPATIBILITY_DATE>",
+	"compatibility_date": "2024-11-26",
 	"observability": {
 		"enabled": true,
 	},
