@@ -29,23 +29,56 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install functions dependencies
           command: |
-            sudo npm install -g pnpm
-            pnpm install --frozen-lockfile
+            cd functions
+            npm install
       - run:
-          name: Run linting
+          name: ESLint check (functions)
           command: |
             cd functions
             npm run lint -- --max-warnings 0
       - run:
-          name: TypeScript type check
+          name: TypeScript type check (functions)
           command: |
             cd functions
-            npx tsc --noEmit
+            ./node_modules/.bin/tsc --noEmit
+
+  worker-checks:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
       - run:
-          name: Quality GC check
-          command: npx quality-gc run || echo "Quality GC issues found"
+          name: Install worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: Run Cloudflare Worker tests
+          command: |
+            cd app
+            npm test
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install worker dependencies
+          command: |
+            cd app
+            npm install
+      - run:
+          name: Deploy Cloudflare Worker (ytstudio)
+          command: |
+            if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+              echo "CLOUDFLARE_API_TOKEN not configured — skipping deploy"
+              exit 0
+            fi
+            cd app
+            npm run deploy
 
 workflows:
   version: 2
@@ -53,3 +86,10 @@ workflows:
     jobs:
       - python-checks
       - node-checks
+      - worker-checks
+      - worker-deploy:
+          requires:
+            - worker-checks
+          filters:
+            branches:
+              only: main
