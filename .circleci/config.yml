@@ -29,10 +29,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm ci
       - run:
           name: Run linting
           command: |
@@ -47,9 +52,32 @@ jobs:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
 
+  deploy-worker:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Deploy YouTube API Worker to Cloudflare
+          command: pnpm run deploy:worker
+          environment:
+            CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
+
 workflows:
   version: 2
   validate:
     jobs:
       - python-checks
       - node-checks
+
+  deploy:
+    jobs:
+      - deploy-worker:
+          filters:
+            branches:
+              only: main
