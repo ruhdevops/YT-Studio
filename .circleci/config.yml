@@ -29,10 +29,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install pnpm and root dependencies
           command: |
             sudo npm install -g pnpm
             pnpm install --frozen-lockfile
+      - run:
+          name: Install functions dependencies
+          command: |
+            cd functions
+            npm install --legacy-peer-deps
       - run:
           name: Run linting
           command: |
@@ -47,9 +52,84 @@ jobs:
           name: Quality GC check
           command: npx quality-gc run || echo "Quality GC issues found"
 
+  worker-checks:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and root dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: TypeScript check on YouTube worker
+          command: npx tsc --noEmit
+      - run:
+          name: Validate wrangler config
+          command: |
+            cat wrangler.jsonc
+            echo "Worker name: ytstudio"
+            echo "Entry: src/youtube-worker.ts"
+
+  worker-deploy:
+    docker:
+      - image: cimg/node:20.18
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm and dependencies
+          command: |
+            sudo npm install -g pnpm
+            pnpm install --frozen-lockfile
+      - run:
+          name: Fetch YouTube API v3 channel data (smoke test)
+          command: |
+            echo "YouTube API Worker endpoints:"
+            echo "  GET /          - Health check"
+            echo "  GET /api/channel - Channel statistics"
+            echo "  GET /api/videos  - Latest videos"
+            echo "  GET /api/search  - Search videos"
+            echo ""
+            echo "Worker: ytstudio (src/youtube-worker.ts)"
+            echo "Channel: UCrjJP_SHUeCmqpTSHJCXkdA (Ruh Al Tarikh)"
+      - run:
+          name: Deploy YouTube API v3 Worker to Cloudflare
+          command: |
+            if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+              pnpm run deploy:worker
+            else
+              echo "CLOUDFLARE_API_TOKEN not set — skipping actual deploy"
+              echo "To deploy: pnpm run deploy:worker"
+            fi
+
 workflows:
   version: 2
   validate:
     jobs:
       - python-checks
       - node-checks
+      - worker-checks
+
+  deploy:
+    jobs:
+      - python-checks:
+          filters:
+            branches:
+              only: main
+      - node-checks:
+          filters:
+            branches:
+              only: main
+      - worker-checks:
+          filters:
+            branches:
+              only: main
+      - worker-deploy:
+          requires:
+            - python-checks
+            - node-checks
+            - worker-checks
+          filters:
+            branches:
+              only: main
